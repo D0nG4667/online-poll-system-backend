@@ -1,0 +1,32 @@
+[project]
+name = "online-poll-system-backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "celery>=5.6.2",
+    "dj-rest-auth>=7.0.2",
+    "django>=5.2.10",
+    "django-allauth>=65.14.0",
+    "django-cors-headers>=4.9.0",
+    "django-environ>=0.12.0",
+    "django-extensions>=4.1",
+    "django-filter>=25.2",
+    "djangorestframework>=3.16.1",
+    "drf-spectacular>=0.29.0",
+    "gunicorn>=25.0.1",
+    "psycopg[binary]>=3.3.2",
+    "redis>=7.1.0",
+    "strawberry-graphql-django>=0.75.0",
+    "uvicorn>=0.40.0",
+]
+
+[dependency-groups]
+dev = [
+    "coverage>=7.13.2",
+    "factory-boy>=3.3.3",
+    "pre-commit>=4.5.1",
+    "pytest-django>=4.11.1",
+    "ruff>=0.14.14",
+]
