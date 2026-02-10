@@ -1,8 +1,13 @@
+import logging
+
 import strawberry
 import strawberry_django
+from django.core.cache import cache
 from strawberry import auto
 
 from . import models
+
+logger = logging.getLogger(__name__)
 
 
 @strawberry_django.filter(models.Poll, lookups=True)
@@ -26,6 +31,23 @@ class OptionType:
 
     @strawberry.field
     def vote_count(self) -> int:
+        # Try to fetch from cache generic pattern: poll_{id}_votes
+        try:
+            # We need the poll_id. Option -> Question -> Poll
+            poll_id = self.question.poll_id
+            cache_key = f"poll_{poll_id}_votes"
+            cached_data = cache.get(cache_key)
+
+            if cached_data:
+                # Structure: { question_id: { 'options': { opt_id: count }, ... } }
+                q_data = cached_data.get(self.question_id)
+                if q_data:
+                    return q_data.get("options", {}).get(self.id, 0)
+        except Exception as e:
+            logger.warning(
+                f"Failed to fetch vote_count from cache for Option {self.id}: {e}"
+            )
+
         return self.votes.count()
 
 
@@ -39,6 +61,19 @@ class QuestionType:
 
     @strawberry.field
     def total_votes(self) -> int:
+        try:
+            cache_key = f"poll_{self.poll_id}_votes"
+            cached_data = cache.get(cache_key)
+
+            if cached_data:
+                q_data = cached_data.get(self.id)
+                if q_data:
+                    return q_data.get("total_votes", 0)
+        except Exception as e:
+            logger.warning(
+                f"Failed to fetch total_votes from cache for Question {self.id}: {e}"
+            )
+
         return self.votes.count()
 
 

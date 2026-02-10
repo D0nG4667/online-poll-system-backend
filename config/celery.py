@@ -1,9 +1,12 @@
+import logging
 import os
 
 from celery import Celery
 
+logger = logging.getLogger(__name__)
+
 # Set the default Django settings module for the 'celery' program.
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.production")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 
 app = Celery("config")
 
@@ -17,7 +20,6 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 app.autodiscover_tasks()
 
 
-@app.task(bind=True)
+@app.task(bind=True, ignore_result=True)
 def debug_task(self):
-    # debug print removed for ruff compliance
-    pass
+    logger.info(f"Request: {self.request!r}")
