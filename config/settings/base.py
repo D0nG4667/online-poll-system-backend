@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     "drf_spectacular",
+    "strawberry_django",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",

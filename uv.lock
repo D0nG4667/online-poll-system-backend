@@ -629,6 +629,7 @@ dependencies = [
     { name = "pyjwt", extra = ["crypto"] },
     { name = "redis" },
     { name = "requests" },
+    { name = "strawberry-graphql" },
     { name = "strawberry-graphql-django" },
     { name = "uvicorn" },
 ]
@@ -659,6 +660,7 @@ requires-dist = [
     { name = "pyjwt", extras = ["crypto"], specifier = ">=2.11.0" },
     { name = "redis", specifier = ">=7.1.0" },
     { name = "requests", specifier = ">=2.32.5" },
+    { name = "strawberry-graphql", specifier = ">=0.291.0" },
     { name = "strawberry-graphql-django", specifier = ">=0.75.0" },
     { name = "uvicorn", specifier = ">=0.40.0" },
 ]
@@ -668,7 +670,7 @@ dev = [
     { name = "coverage", specifier = ">=7.13.2" },
     { name = "factory-boy", specifier = ">=3.3.3" },
     { name = "pre-commit", specifier = ">=4.5.1" },
-    { name = "pytest-cov", specifier = ">=7.0.0" },
+    { name = "pytest-cov", specifier = ">=4.1.0" },
     { name = "pytest-django", specifier = ">=4.11.1" },
     { name = "ruff", specifier = ">=0.14.14" },
 ]

@@ -24,9 +24,14 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
+from strawberry.django.views import GraphQLView
+
+from config.schema import schema
+from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("graphql/", csrf_exempt(GraphQLView.as_view(schema=schema))),
     # Authentication
     # Authentication (Headless)
     path("_allauth/", include("allauth.headless.urls")),
