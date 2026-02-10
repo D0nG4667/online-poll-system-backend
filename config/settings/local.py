@@ -1,4 +1,5 @@
-from .base import *
+from .base import *  # noqa
+from .base import env, BASE_DIR
 
 DEBUG = True
 SECRET_KEY = env("DJANGO_SECRET_KEY", default="django-insecure-local-key")

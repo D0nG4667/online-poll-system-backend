@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     # Local
     "apps.core",
     "apps.users",
+    "apps.polls",
 ]
 
 SITE_ID = 1
@@ -185,7 +186,9 @@ MFA_PASSKEY_LOGIN_ENABLED = True
 MFA_PASSKEY_SIGNUP_ENABLED = True
 
 # HEADLESS_TOKEN_STRATEGY = "allauth.headless.tokens.strategies.jwt.JWTTokenStrategy"
-HEADLESS_TOKEN_STRATEGY = "allauth.headless.tokens.strategies.sessions.SessionTokenStrategy"
+HEADLESS_TOKEN_STRATEGY = (
+    "allauth.headless.tokens.strategies.sessions.SessionTokenStrategy"
+)
 
 
 # HEADLESS_JWT = {
@@ -198,7 +201,7 @@ ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_EMAIL_VERIFICATION = "optional"
 ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = False
 ACCOUNT_LOGIN_BY_CODE_ENABLED = True
-ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = False
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 
