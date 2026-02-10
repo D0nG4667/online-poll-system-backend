@@ -14,9 +14,41 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
+
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
+    # Authentication
+    # Authentication (Headless)
+    path("_allauth/", include("allauth.headless.urls")),
+    # Required by allauth for internal logic (providers/callbacks), even in headless mode.
+    path("accounts/", include("allauth.urls")),
+    # Swagger/Schema
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path(
+        "api/schema/swagger-ui/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
+    path(
+        "api/schema/auth-ui/",
+        SpectacularSwaggerView.as_view(url="/_allauth/openapi.json"),
+        name="swagger-ui-auth",
+    ),
+    path(
+        "api/schema/redoc/",
+        SpectacularRedocView.as_view(url_name="schema"),
+        name="redoc",
+    ),
+    # App APIs
+    path("api/v1/", include("apps.core.urls")),
+    path("api/v1/users/", include("apps.users.urls")),
 ]

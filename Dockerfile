@@ -1,44 +1,73 @@
-# Use a Python image with uv pre-installed
-FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS builder
+# ---- Stage 1: Builder ----
+FROM python:3.13-slim-bookworm AS builder
 
-# Install uv
-# COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
+# Copy uv binary from Astral's official image
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Compile bytecode
-ENV UV_COMPILE_BYTECODE=1
-
-# Working directory
+# Create app directory
+RUN mkdir /app
 WORKDIR /app
 
-# Install dependencies
-COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-install-project --no-dev
+# Environment optimizations
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Final image
-FROM python:3.13-slim-bookworm
-
-WORKDIR /app
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    libpq-dev \
+# Install build dependencies (compilers, headers, pkg-config, Postgres client dev libs)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential gcc pkg-config libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy virtualenv from builder
-COPY --from=builder /app/.venv /app/.venv
+# Copy dependency files first (for caching)
+COPY pyproject.toml uv.lock /app/
 
-# Place executables in the environment at the front of the path
+# Install dependencies only (no project code yet)
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project
+
+# Copy project code
+COPY . /app
+
+# Sync the project (installs the project itself if configured as package, or just finalizes venv)
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen
+
+# Precompile bytecode
+ENV UV_COMPILE_BYTECODE=1
+
+# ---- Stage 2: Runtime ----
+FROM python:3.13-slim-bookworm
+
+# Create non-root user and app dir
+RUN useradd -m -r appuser && \
+    mkdir /app && \
+    chown -R appuser /app
+
+WORKDIR /app
+
+# Copy app code + .venv together from builder
+COPY --from=builder --chown=appuser:appuser /app /app
+
+# Install only runtime libraries (no compilers) - Postgres client
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Ensure .venv/bin is first on PATH
 ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV DJANGO_SETTINGS_MODULE=config.settings.production
 
-# Copy project files
-COPY . .
+# Switch to non-root user
+USER appuser
 
-# Collect static files
-# RUN python manage.py collectstatic --noinput
-# (Commented out: connect to DB usually needed, or use a build arg dummy secret key)
-
-# Expose port
+# Expose the application port
 EXPOSE 8000
 
-# Run gunicorn
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Copy uv binary from Astral's official image (useful for runtime management commands if needed)
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Start the application using Gunicorn
+CMD ["uv", "run", "gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
