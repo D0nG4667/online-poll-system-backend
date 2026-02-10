@@ -1,6 +1,6 @@
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
-from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
 
@@ -100,7 +100,8 @@ class Vote(models.Model):
     )
     option = models.ForeignKey(
         Option, on_delete=models.CASCADE, related_name="votes"
-    )  # For text answers, this might be null? But for single/multiple choice it's required.
+    )  # For text answers, this might be null?
+    # But for single/multiple choice it's required.
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -1,4 +1,5 @@
 import os
+
 from celery import Celery
 
 # Set the default Django settings module for the 'celery' program.
@@ -18,4 +19,5 @@ app.autodiscover_tasks()
 
 @app.task(bind=True)
 def debug_task(self):
-    print(f"Request: {self.request!r}")
+    # debug print removed for ruff compliance
+    pass

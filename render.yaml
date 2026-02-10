@@ -7,7 +7,7 @@ services:
   - type: web
     name: nexus-backend
     env: python
-    buildCommand: uv sync --frozen && python manage.py collectstatic --noinput
+    buildCommand: uv sync --frozen && python manage.py migrate --noinput && python manage.py collectstatic --noinput
     startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: PYTHON_VERSION

@@ -29,5 +29,24 @@ dev = [
     "factory-boy>=3.3.3",
     "pre-commit>=4.5.1",
     "pytest-django>=4.11.1",
+    "pytest-cov>=4.1.0",
     "ruff>=0.14.14",
 ]
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "U", "N", "S", "B", "A", "C4", "T20"]
+ignore = [
+    "S101", # Allow assert for pytest
+    "S104", # Allow 0.0.0.0 for Docker local dev
+    "S105", # Ignore false positive hardcoded password for settings strings
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.local"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+addopts = "--nomigrations --reuse-db"

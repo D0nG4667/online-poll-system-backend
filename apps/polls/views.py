@@ -1,10 +1,11 @@
-from rest_framework import viewsets, permissions, serializers
 from drf_spectacular.utils import extend_schema
-from .models import Poll, Question, Option, Vote
+from rest_framework import permissions, serializers, viewsets
+
+from .models import Option, Poll, Question, Vote
 from .serializers import (
+    OptionSerializer,
     PollSerializer,
     QuestionSerializer,
-    OptionSerializer,
     VoteSerializer,
 )
 

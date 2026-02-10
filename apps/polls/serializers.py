@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Poll, Question, Option, Vote
+
+from .models import Option, Poll, Question, Vote
 
 
 class OptionSerializer(serializers.ModelSerializer):
