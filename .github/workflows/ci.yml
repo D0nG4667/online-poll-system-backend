@@ -74,6 +74,7 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
           SECRET_KEY: ci-secret-key
           DEBUG: "True"
+          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
         run: uv run pytest --cov=. --cov-report=xml
 
       - name: Upload coverage reports to Codecov

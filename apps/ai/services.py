@@ -2,6 +2,8 @@ import json
 import logging
 import os
 
+import sentry_sdk
+
 from django.conf import settings
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -175,6 +177,12 @@ class RAGService:
         """
         Orchestrates the RAG flow: Retrieve -> Generate.
         """
+        sentry_sdk.add_breadcrumb(
+            category="ai",
+            message=f"Generating insight for poll {poll_id}",
+            level="info",
+            data={"query": user_query},
+        )
         # 1. Retrieve Context
         context_text = self.retrieve_context(user_query, poll_id)
 
@@ -219,6 +227,12 @@ class RAGService:
         Generate a complete poll structure from a natural language description.
         Returns a structured dict with poll title, description, questions, and options.
         """
+        sentry_sdk.add_breadcrumb(
+            category="ai",
+            message="Generating poll structure from prompt",
+            level="info",
+            data={"prompt_length": len(user_prompt)},
+        )
         system_prompt = """
         You are a helpful assistant that generates structured poll data.
         Given a user's description, create a complete poll with:

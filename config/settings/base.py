@@ -13,12 +13,33 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 
 import environ
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 env = environ.Env()
 environ.Env.read_env(BASE_DIR / ".env")
+
+# Sentry Configuration
+# ------------------------------------------------------------------------------
+
+SENTRY_DSN = env("SENTRY_DSN", default=None)
+if SENTRY_DSN:
+    from sentry_sdk.integrations.strawberry import StrawberryIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[
+            DjangoIntegration(),
+            StrawberryIntegration(async_execution=False),
+        ],
+        traces_sample_rate=env.float("SENTRY_TRACES_SAMPLE_RATE", default=0.1),
+        profiles_sample_rate=env.float("SENTRY_PROFILES_SAMPLE_RATE", default=0.1),
+        send_default_pii=True,
+        environment=env("DJANGO_ENVIRONMENT", default="development"),
+    )
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -173,7 +194,7 @@ EMAIL_BACKEND = env(
     "DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend"
 )
 DEFAULT_FROM_EMAIL = env(
-    "DEFAULT_FROM_EMAIL", default="Plaude Polls <hello@plaude.com>"
+    "DEFAULT_FROM_EMAIL", default="Plaude Polls <hello@plaudepolls.com>"
 )
 
 # REST Framework
@@ -225,6 +246,7 @@ HEADLESS_JWT_PRIVATE_KEY = _jwt_key_raw.replace(r"\n", "\n")
 # Token lifetime configuration
 HEADLESS_JWT_ACCESS_TOKEN_EXPIRES_IN = 60 * 60 * 24  # 24 hours in seconds
 HEADLESS_JWT_REFRESH_TOKEN_EXPIRES_IN = 60 * 60 * 24 * 7  # 7 days in seconds
+HEADLESS_JWT_ALGORITHM = "RS256"  # RSA algorithm for asymmetric keys
 
 # AllAuth
 ACCOUNT_LOGIN_METHODS = {"email"}
@@ -256,6 +278,9 @@ SOCIALACCOUNT_PROVIDERS = {
         "VERIFIED_EMAIL": True,
     }
 }
+
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_ADAPTER = "allauth.socialaccount.adapter.DefaultSocialAccountAdapter"
 
 # Social account auto-signup
 SOCIALACCOUNT_AUTO_SIGNUP = True

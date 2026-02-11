@@ -10,14 +10,14 @@ from . import models
 logger = logging.getLogger(__name__)
 
 
-@strawberry_django.filter(models.Poll, lookups=True)
+@strawberry_django.filter_type(models.Poll, lookups=True)
 class PollFilter:
     id: auto
     title: auto
     is_active: auto
 
 
-@strawberry_django.order(models.Poll)
+@strawberry_django.order_type(models.Poll)
 class PollOrder:
     title: auto
     created_at: auto
@@ -93,5 +93,7 @@ class PollType:
 
 @strawberry.type
 class Query:
-    polls: list[PollType] = strawberry_django.field(filters=PollFilter, order=PollOrder)
+    polls: list[PollType] = strawberry_django.field(
+        filters=PollFilter, ordering=PollOrder
+    )
     poll: PollType = strawberry_django.field()

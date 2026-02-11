@@ -30,7 +30,12 @@ from strawberry.django.views import GraphQLView
 
 from config.schema import schema
 
+
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
 urlpatterns = [
+    path('sentry-debug/', trigger_error),
     path("admin/", admin.site.urls),
     path("graphql/", csrf_exempt(GraphQLView.as_view(schema=schema))),
     # Frontend Callback Mocks (to avoid 404s when frontend is not running)

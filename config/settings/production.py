@@ -6,6 +6,8 @@ DEBUG = False
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["onrender.com"])
 
+# Ensure Sentry knows this is production
+DJANGO_ENVIRONMENT = "production"
 FRONTEND_URL = env("FRONTEND_URL")
 
 # Database (Neon)
