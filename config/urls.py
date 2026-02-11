@@ -59,6 +59,7 @@ urlpatterns = [
     path("api/v1/", include("apps.core.urls")),
     path("api/v1/users/", include("apps.users.urls")),
     path("api/v1/", include("apps.polls.urls")),
+    path("api/v1/ai/", include("apps.ai.urls")),
 ]
 
 

@@ -1,11 +1,18 @@
 import strawberry
 
+from apps.ai.schema import Mutation as AIMutation
+from apps.ai.schema import Query as AIQuery
 from apps.polls.schema import Query as PollsQuery
 
 
 @strawberry.type
-class Query(PollsQuery):
+class Query(PollsQuery, AIQuery):
     pass
 
 
-schema = strawberry.Schema(query=Query)
+@strawberry.type
+class Mutation(AIMutation):
+    pass
+
+
+schema = strawberry.Schema(query=Query, mutation=Mutation)

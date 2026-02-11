@@ -209,3 +209,4 @@ __marimo__/
 
 # Local scripts
 verify_*py
+test_ai_features.py

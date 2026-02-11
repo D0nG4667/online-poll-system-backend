@@ -2,3 +2,7 @@ docker compose exec web python manage.py test apps.users.tests
 
 
 docker compose exec web python manage.py makemigrations polls
+
+docker compose exec web python manage.py makemigrations ai
+
+docker-compose exec web uv run python manage.py makemigrations --empty ai --name enable_vector_extension

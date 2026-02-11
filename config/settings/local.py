@@ -3,7 +3,15 @@ from .base import env, BASE_DIR
 
 DEBUG = True
 SECRET_KEY = env("DJANGO_SECRET_KEY", default="django-insecure-local-key")
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "web", "http://localhost:3000"]
+ALLOWED_HOSTS = [
+    "localhost",
+    "0.0.0.0",
+    "127.0.0.1",
+    "web",
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+]
 
 # Local Database (Docker or Sqlite fallback)
 DATABASES = {

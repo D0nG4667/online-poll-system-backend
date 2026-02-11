@@ -31,6 +31,8 @@ DEBUG = env.bool("DJANGO_DEBUG", False)
 
 ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "web"]
 
+BASE_URL = env("BASE_URL", default="http://localhost:8000")
+
 
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
@@ -68,6 +70,7 @@ INSTALLED_APPS = [
     "apps.core",
     "apps.users",
     "apps.polls",
+    "apps.ai",
 ]
 
 SITE_ID = 1
@@ -213,10 +216,26 @@ ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 # CORS
 CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all in debug mode
 
+DESCRIPTION = f"""
+## Project Nexus- Plaude Polls API
+
+Hybrid REST & GraphQL API for Online Poll System
+
+### Features
+- Authentication (AllAuth) → [AllAuth]({BASE_URL}/api/schema/auth-ui/)
+- REST API for poll management (Polls, Votes, Questions, Options)
+- GraphQL API for poll queries and mutations → [GraphQL]({BASE_URL}/graphql/)
+- AI-powered poll generation
+- AI-powered poll insights
+- AI-powered poll analysis
+- AI-powered poll ingestion
+- AI-powered poll history
+"""
+
 # Spectacular
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Project Nexus API",
-    "DESCRIPTION": "Hybrid REST & GraphQL API for Online Poll System",
+    "TITLE": "Plaude Polls API",
+    "DESCRIPTION": DESCRIPTION,
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
 }
@@ -244,3 +263,8 @@ CACHES = {
         },
     }
 }
+
+# AI Configuration
+# ------------------------------------------------------------------------------
+OPENAI_API_KEY = env("OPENAI_API_KEY", default=None)
+GEMINI_API_KEY = env("GEMINI_API_KEY", default=None)
