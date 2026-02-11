@@ -13,6 +13,8 @@ ALLOWED_HOSTS = [
     "http://127.0.0.1:3001",
 ]
 
+FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
+
 # Local Database (Docker or Sqlite fallback)
 DATABASES = {
     "default": env.db("DATABASE_URL", default=f"sqlite:///{BASE_DIR}/db.sqlite3")

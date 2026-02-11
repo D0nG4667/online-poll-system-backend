@@ -24,12 +24,14 @@ environ.Env.read_env(BASE_DIR / ".env")
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("DJANGO_SECRET_KEY", default="django-insecure-default-key-change-me")
+SECRET_KEY = env("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DJANGO_DEBUG", False)
 
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "web"]
+ALLOWED_HOSTS = env.list(
+    "DJANGO_ALLOWED_HOSTS", default=["localhost", "0.0.0.0", "127.0.0.1", "web"]
+)
 
 BASE_URL = env("BASE_URL", default="http://localhost:8000")
 
@@ -64,6 +66,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "allauth.headless",
+    "anymail",
     "django_extensions",
     "django_filters",
     # Local
@@ -165,6 +168,14 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Email Configuration (Default to Console for Local Dev)
+EMAIL_BACKEND = env(
+    "DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend"
+)
+DEFAULT_FROM_EMAIL = env(
+    "DEFAULT_FROM_EMAIL", default="Plaude Polls <hello@plaude.com>"
+)
+
 # REST Framework
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -176,15 +187,19 @@ REST_FRAMEWORK = {
 
 # JWT / Auth
 # Headless Auth
+FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
+
 HEADLESS_ONLY = True
 HEADLESS_SERVE_SPECIFICATION = True
 HEADLESS_CLIENTS = ["app", "browser"]
 HEADLESS_FRONTEND_URLS = {
-    "account_confirm_email": "/account/verify-email/{key}",
-    "account_reset_password": "/account/password/reset",
-    "account_reset_password_from_key": "/account/password/reset/key/{key}",
-    "account_signup": "/account/signup",
-    "socialaccount_login_error": "/account/provider/callback",
+    "account_confirm_email": f"{FRONTEND_URL}/account/verify-email/{{key}}",
+    "account_reset_password": f"{FRONTEND_URL}/account/password/reset",
+    "account_reset_password_from_key": (
+        f"{FRONTEND_URL}/account/password/reset/key/{{key}}"
+    ),
+    "account_signup": f"{FRONTEND_URL}/account/signup",
+    "socialaccount_login_error": f"{FRONTEND_URL}/account/provider/callback",
 }
 
 MFA_SUPPORTED_TYPES = ["totp", "recovery_codes", "webauthn"]

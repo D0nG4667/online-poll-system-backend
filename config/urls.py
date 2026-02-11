@@ -18,6 +18,7 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import include, path
 from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.views import (
@@ -32,6 +33,14 @@ from config.schema import schema
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("graphql/", csrf_exempt(GraphQLView.as_view(schema=schema))),
+    # Frontend Callback Mocks (to avoid 404s when frontend is not running)
+    path(
+        "account/provider/callback",
+        lambda r: JsonResponse(
+            {"detail": "This is a placeholder for the frontend callback."}, status=200
+        ),
+        name="frontend-callback-placeholder",
+    ),
     # Authentication
     # Authentication (Headless)
     path("_allauth/", include("allauth.headless.urls")),

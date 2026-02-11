@@ -2,9 +2,14 @@
 Custom authentication classes for supporting multiple auth methods.
 """
 
+import logging
+
 from allauth.headless.tokens.strategies.base import AbstractTokenStrategy
 from rest_framework import exceptions
 from rest_framework.authentication import BaseAuthentication
+
+
+logger = logging.getLogger(__name__)
 
 
 class MultiAuthenticationBackend(BaseAuthentication):
@@ -26,6 +31,7 @@ class MultiAuthenticationBackend(BaseAuthentication):
             if result:
                 return result
         except exceptions.AuthenticationFailed:
+            logger.debug("Session authentication failed.")
             pass
 
         # Try X-Session-Token (allauth headless)
@@ -35,6 +41,7 @@ class MultiAuthenticationBackend(BaseAuthentication):
             if result:
                 return result
         except exceptions.AuthenticationFailed:
+            logger.debug("X-Session-Token authentication failed.")
             pass
 
         # Try JWT token in Authorization header
@@ -49,7 +56,8 @@ class MultiAuthenticationBackend(BaseAuthentication):
                     user = strategy.lookup_user_from_access_token(token)
                     if user:
                         return (user, None)
-                except Exception:
+                except Exception as e:
+                    logger.warning("JWT token lookup failed: %s", e)
                     pass
 
         return None

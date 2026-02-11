@@ -6,6 +6,8 @@ DEBUG = False
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["onrender.com"])
 
+FRONTEND_URL = env("FRONTEND_URL")
+
 # Database (Neon)
 DATABASES = {
     "default": dj_database_url.config(
@@ -41,3 +43,11 @@ SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
+
+# Email Configuration (Brevo)
+# ------------------------------------------------------------------------------
+# https://github.com/anymail/django-anymail/blob/main/docs/esps/brevo.md
+EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
+ANYMAIL = {
+    "BREVO_API_KEY": env("BREVO_API_KEY"),
+}
