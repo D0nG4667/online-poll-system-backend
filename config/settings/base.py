@@ -168,8 +168,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # REST Framework
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework.authentication.SessionAuthentication",
-        "allauth.headless.contrib.rest_framework.authentication.XSessionTokenAuthentication",
+        "apps.core.authentication.MultiAuthenticationBackend",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
@@ -192,15 +191,25 @@ MFA_SUPPORTED_TYPES = ["totp", "recovery_codes", "webauthn"]
 MFA_PASSKEY_LOGIN_ENABLED = True
 MFA_PASSKEY_SIGNUP_ENABLED = True
 
-# HEADLESS_TOKEN_STRATEGY = "allauth.headless.tokens.strategies.jwt.JWTTokenStrategy"
-HEADLESS_TOKEN_STRATEGY = (
-    "allauth.headless.tokens.strategies.sessions.SessionTokenStrategy"
-)
+# Enable JWT Token Strategy
+HEADLESS_TOKEN_STRATEGY = "allauth.headless.tokens.strategies.jwt.JWTTokenStrategy"
 
+# JWT Configuration per django-allauth documentation
+# https://github.com/pennersr/django-allauth/blob/main/docs/headless/token-strategies/jwt-tokens.md
+# The private key should be a multi-line string with actual newlines
+_jwt_key_raw = env.str("JWT_PRIVATE_KEY", default=None)
+if not _jwt_key_raw:
+    raise ValueError(
+        "JWT_PRIVATE_KEY environment variable is required. "
+        "Run: docker-compose exec web uv run python scripts/generate_jwt_key.py"
+    )
 
-# HEADLESS_JWT = {
-#     "SIGNING_KEY": (BASE_DIR / "config" / "jwt_private_key.pem").read_text()
-# }
+# Decode escaped newlines: \n (two chars) -> actual newline (one char)
+HEADLESS_JWT_PRIVATE_KEY = _jwt_key_raw.replace(r"\n", "\n")
+
+# Token lifetime configuration
+HEADLESS_JWT_ACCESS_TOKEN_EXPIRES_IN = 60 * 60 * 24  # 24 hours in seconds
+HEADLESS_JWT_REFRESH_TOKEN_EXPIRES_IN = 60 * 60 * 24 * 7  # 7 days in seconds
 
 # AllAuth
 ACCOUNT_LOGIN_METHODS = {"email"}
@@ -211,6 +220,31 @@ ACCOUNT_LOGIN_BY_CODE_ENABLED = True
 ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = False
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+
+# Social Account Configuration
+# https://github.com/pennersr/django-allauth/blob/main/docs/socialaccount/provider_configuration.md
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        # OAuth credentials from environment variables
+        "APPS": [
+            {
+                "client_id": env.str("GOOGLE_OAUTH_CLIENT_ID", default=""),
+                "secret": env.str("GOOGLE_OAUTH_CLIENT_SECRET", default=""),
+                "key": "",
+                "settings": {
+                    "scope": ["profile", "email"],
+                    "auth_params": {"access_type": "online"},
+                },
+            }
+        ],
+        # Trust Google's email verification
+        "VERIFIED_EMAIL": True,
+    }
+}
+
+# Social account auto-signup
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_STORE_TOKENS = True
 
 
 # CORS
