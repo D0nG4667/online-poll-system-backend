@@ -34,8 +34,9 @@ from config.schema import schema
 def trigger_error(request):
     division_by_zero = 1 / 0
 
+
 urlpatterns = [
-    path('sentry-debug/', trigger_error),
+    path("sentry-debug/", trigger_error),
     path("admin/", admin.site.urls),
     path("graphql/", csrf_exempt(GraphQLView.as_view(schema=schema))),
     # Frontend Callback Mocks (to avoid 404s when frontend is not running)
@@ -74,6 +75,7 @@ urlpatterns = [
     path("api/v1/users/", include("apps.users.urls")),
     path("api/v1/", include("apps.polls.urls")),
     path("api/v1/ai/", include("apps.ai.urls")),
+    path("api/v1/", include("apps.distribution.urls")),
 ]
 
 

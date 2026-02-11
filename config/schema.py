@@ -2,11 +2,12 @@ import strawberry
 
 from apps.ai.schema import Mutation as AIMutation
 from apps.ai.schema import Query as AIQuery
+from apps.distribution.schema import Query as DistributionQuery
 from apps.polls.schema import Query as PollsQuery
 
 
 @strawberry.type
-class Query(PollsQuery, AIQuery):
+class Query(PollsQuery, AIQuery, DistributionQuery):
     pass
 
 

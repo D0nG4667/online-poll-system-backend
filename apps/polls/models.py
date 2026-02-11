@@ -3,6 +3,8 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from apps.core.fields import RandomSlugField
+
 
 class Poll(models.Model):
     """
@@ -16,6 +18,7 @@ class Poll(models.Model):
     description = models.TextField(_("Description"), blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    slug = RandomSlugField(length=8, help_text=_("Public shareable identifier"))
     start_date = models.DateTimeField(_("Start Date"), default=timezone.now)
     end_date = models.DateTimeField(_("End Date"), null=True, blank=True)
     is_active = models.BooleanField(_("Is Active"), default=True)
@@ -27,6 +30,9 @@ class Poll(models.Model):
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
 
     @property
     def is_open(self):

@@ -95,9 +95,12 @@ INSTALLED_APPS = [
     "apps.users",
     "apps.polls",
     "apps.ai",
+    "apps.distribution",
 ]
 
 SITE_ID = 1
+
+BASE_URL = env("BASE_URL", default="http://localhost:8000")
 
 AUTH_USER_MODEL = "users.User"
 

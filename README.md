@@ -77,4 +77,4 @@ docker-compose exec web uv run pytest --cov=apps --cov-report=term-missing
 - **Telemetry**: Sentry integration for real-time error tracking.
 
 ---
-Built with ❤️ by Gabriel Okundaye (ProDev FullStack Engineer)
+Built with ❤️ by Gabriel Okundaye (ProDev Backend Engineer)

@@ -4,8 +4,14 @@ import strawberry
 import strawberry_django
 from django.core.cache import cache
 from strawberry import auto
+from strawberry_django.fields.types import field_type_map
+
+from apps.core.fields import RandomSlugField
 
 from . import models
+
+# Register custom field for 'auto' support in strawberry-django
+field_type_map.update({RandomSlugField: str})
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +90,9 @@ class PollType:
     description: auto
     created_at: auto
     updated_at: auto
+
+    slug: auto
+
     start_date: auto
     end_date: auto
     is_active: auto
