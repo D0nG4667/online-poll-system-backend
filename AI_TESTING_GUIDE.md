@@ -160,6 +160,47 @@ query {
 }
 ```
 
+### 5. Analytics Dashboard (Query) **NEW!**
+Retrieve aggregated statistics, trends, and top polls.
+
+```graphql
+query GetAnalytics {
+  analyticsStats(period: "30d") {
+    totalPolls
+    totalViews
+    avgResponseRate
+    pollsChange
+  }
+  analyticsTrends(period: "30d") {
+    pollCreation {
+      date
+      value
+    }
+  }
+  topPolls(limit: 3) {
+    title
+    engagementScore
+  }
+}
+```
+
+### 6. Generate Analytics Insight (Mutation) **NEW!**
+Generate a quick AI insight for the analytics dashboard context.
+
+```graphql
+mutation {
+  generateInsight(pollId: 1, query: "Explain the response rate trend")
+}
+```
+**Expected Response**:
+```json
+{
+  "data": {
+    "generateInsight": "The response rate has increased by 15% over the last week..."
+  }
+}
+```
+
 ## Testing Workflow
 
 1. **Create a Poll** (via existing polls API)
@@ -169,6 +210,7 @@ query {
    ```bash
    # GraphQL Playground at http://localhost:8000/graphql/
    mutation { ingestPollData(pollId: YOUR_POLL_ID) }
+   ```
    ```
 5. **Generate Insights**:
    ```graphql
@@ -182,62 +224,47 @@ query {
      }
    }
    ```
-
-## Authentication
-
-All AI mutations and queries require authentication using **session tokens** (not JWT).
-
-### How to Obtain a Session Token
-
-1. **Sign Up** (if you don't have an account):
-   ```bash
-   curl -X POST http://localhost:8000/_allauth/browser/v1/auth/signup \
-     -H "Content-Type: application/json" \
-     -d '{
-       "email": "user@example.com",
-       "password": "yourpassword123",
-       "password_confirm": "yourpassword123"
-     }'
-   ```
-
-2. **Log In** to get your session token:
-   ```bash
-   curl -X POST http://localhost:8000/_allauth/browser/v1/auth/login \
-     -H "Content-Type: application/json" \
-     -d '{
-       "email": "user@example.com",
-       "password": "yourpassword123"
-     }'
-   ```
-
-   **Response** (extract the `sessionToken`):
-   ```json
-   {
-     "status": 200,
-     "data": {
-       "user": {"id": 1, "email": "user@example.com"},
-       "sessionToken": "abc123def456..."
+6. **Check Analytics**:
+   ```graphql
+   query {
+     analyticsStats(period: "30d") {
+       totalViews
+       avgResponseRate
      }
    }
    ```
 
-### Using Session Tokens
+## Authentication
 
-#### For REST API:
-```bash
-curl -X POST http://localhost:8000/api/v1/ai/generate-poll/ \
-  -H "X-Session-Token: YOUR_SESSION_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"prompt": "Create a poll about favorite programming languages"}'
-```
+All AI mutations and queries require authentication. You can use either **session tokens** (recommended for browsers) or **JWT** (recommended for API clients).
 
-#### For GraphQL:
-In GraphQL Playground (`http://localhost:8000/graphql/`), add to HTTP Headers:
-```json
-{
-  "X-Session-Token": "YOUR_SESSION_TOKEN"
-}
-```
+### Option 1: Session Token (Browser)
+
+1. **Log In**:
+   ```bash
+   curl -X POST http://localhost:8000/_allauth/browser/v1/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"email": "user@example.com", "password": "yourpassword123"}'
+   ```
+   **Response**: Extract `sessionToken` from the response.
+
+2. **Use in Requests**:
+   - **REST**: Header `X-Session-Token: abc123def456...`
+   - **GraphQL**: Header `X-Session-Token: abc123def456...`
+
+### Option 2: JWT (API/Mobile)
+
+1. **Obtain Token**:
+   ```bash
+   curl -X POST http://localhost:8000/_allauth/app/v1/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"email": "user@example.com", "password": "yourpassword123"}'
+   ```
+   **Response**: Extract `access_token` from `meta`.
+
+2. **Use in Requests**:
+   - **REST**: Header `Authorization: Bearer eyJ0eXAi...`
+   - **GraphQL**: Header `Authorization: Bearer eyJ0eXAi...`
 
 ## Error Scenarios
 

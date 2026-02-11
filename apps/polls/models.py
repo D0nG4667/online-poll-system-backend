@@ -28,6 +28,11 @@ class Poll(models.Model):
         verbose_name = _("Poll")
         verbose_name_plural = _("Polls")
 
+    # index by slug
+    indexes = [
+        models.Index(fields=["slug"]),
+    ]
+
     def __str__(self):
         return self.title
 
@@ -117,3 +122,23 @@ class Vote(models.Model):
 
     def __str__(self):
         return f"{self.user} voted on {self.question}"
+
+
+class PollView(models.Model):
+    """
+    Tracks every time a poll is viewed.
+    """
+
+    poll = models.ForeignKey(Poll, related_name="views", on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("Poll View")
+        verbose_name_plural = _("Poll Views")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"View of {self.poll.title} at {self.created_at}"

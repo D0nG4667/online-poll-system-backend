@@ -84,8 +84,7 @@ class QuestionType:
 
 
 @strawberry_django.type(models.Poll)
-class PollType:
-    id: auto
+class PollType(strawberry.relay.Node):
     title: auto
     description: auto
     created_at: auto
@@ -102,7 +101,9 @@ class PollType:
 
 @strawberry.type
 class Query:
-    polls: list[PollType] = strawberry_django.field(
-        filters=PollFilter, ordering=PollOrder
+    polls: strawberry.relay.ListConnection[PollType] = strawberry_django.connection(
+        strawberry.relay.ListConnection[PollType],
+        filters=PollFilter,
+        ordering=PollOrder,
     )
     poll: PollType = strawberry_django.field()

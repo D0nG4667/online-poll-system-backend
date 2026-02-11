@@ -27,6 +27,7 @@ class PollSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "title",
+            "slug",
             "description",
             "created_by",
             "start_date",
