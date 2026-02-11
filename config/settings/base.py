@@ -178,7 +178,7 @@ REST_FRAMEWORK = {
 # Headless Auth
 HEADLESS_ONLY = True
 HEADLESS_SERVE_SPECIFICATION = True
-HEADLESS_CLIENTS = ["app"]
+HEADLESS_CLIENTS = ["app", "browser"]
 HEADLESS_FRONTEND_URLS = {
     "account_confirm_email": "/account/verify-email/{key}",
     "account_reset_password": "/account/password/reset",
