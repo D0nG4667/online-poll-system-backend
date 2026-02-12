@@ -1,6 +1,7 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, viewsets
 
+from apps.core.pagination import StandardResultsSetPagination
 from .models import Option, Poll, Question, Vote
 from .serializers import (
     OptionSerializer,
@@ -19,6 +20,7 @@ class PollViewSet(viewsets.ModelViewSet):
     queryset = Poll.objects.all()
     serializer_class = PollSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    pagination_class = StandardResultsSetPagination
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)

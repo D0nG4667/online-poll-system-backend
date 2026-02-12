@@ -77,3 +77,13 @@ class PaginationTests(TestCase):
         self.assertEqual(len(data["results"]), 5)
         self.assertIsNone(data["next"])
         self.assertIsNotNone(data["previous"])
+
+    def test_rest_page_size(self):
+        # Test custom page size
+        response = self.client.get("/api/v1/polls/?page_size=10")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        self.assertEqual(len(data["results"]), 10)
+        self.assertEqual(data["count"], 25)
+        self.assertIsNotNone(data["next"])

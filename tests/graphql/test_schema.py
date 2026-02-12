@@ -14,10 +14,14 @@ class TestGraphQLQueries:
         query = """
             query TestPolls {
                 polls {
-                    id
-                    title
-                    description
-                    isActive
+                    edges {
+                        node {
+                            id
+                            title
+                            description
+                            isActive
+                        }
+                    }
                 }
             }
         """
@@ -25,8 +29,8 @@ class TestGraphQLQueries:
         assert response.status_code == 200
         data = response.json()
         assert "errors" not in data
-        assert len(data["data"]["polls"]) >= 1
-        assert data["data"]["polls"][0]["title"] == poll.title
+        assert len(data["data"]["polls"]["edges"]) >= 1
+        assert data["data"]["polls"]["edges"][0]["node"]["title"] == poll.title
 
     def test_query_single_poll(self, graphql_client, poll_with_data):
         """
@@ -74,15 +78,19 @@ class TestGraphQLQueries:
         query = """
             query TestFilter($active: Boolean) {
                 polls(filters: { isActive: { exact: $active } }) {
-                    title
-                    isActive
+                    edges {
+                        node {
+                            title
+                            isActive
+                        }
+                    }
                 }
             }
         """
         # Test True
         response = graphql_client(query, {"active": True})
         data = response.json()
-        titles = [p["title"] for p in data["data"]["polls"]]
+        titles = [p["node"]["title"] for p in data["data"]["polls"]["edges"]]
         assert "Active Poll" in titles
         assert "Inactive Poll" not in titles
 

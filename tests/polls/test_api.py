@@ -17,8 +17,8 @@ class TestPollAPI:
         response = api_client.get(url)
 
         assert response.status_code == 200
-        assert len(response.data) >= 1
-        assert response.data[0]["title"] == poll.title
+        assert len(response.data["results"]) >= 1
+        assert response.data["results"][0]["title"] == poll.title
 
     def test_list_polls_authenticated(self, auth_client, poll):
         """
@@ -28,7 +28,7 @@ class TestPollAPI:
         response = auth_client.get(url)
 
         assert response.status_code == 200
-        assert len(response.data) >= 1
+        assert len(response.data["results"]) >= 1
 
     def test_retrieve_poll_detail(self, api_client, poll):
         """
@@ -131,11 +131,11 @@ class TestPollAPI:
 
         url = reverse("polls:poll-list")
 
-        # Test active
+        # Test True
         response = api_client.get(f"{url}?is_active=true")
         assert response.status_code == 200
         # Results might contain more from other fixtures, but should include our active one
-        titles = [p["title"] for p in response.data]
+        titles = [p["title"] for p in response.data["results"]]
         assert "Active Poll" in titles
         # Inactive should NOT be there if filtering works correctly
         # Note: Need to check if filtering is actually enabled in the ViewSet
@@ -154,7 +154,7 @@ class TestPollAPI:
 
         assert response.status_code == 200
         # Default ordering is -created_at
-        assert response.data[0]["title"] == "Newest"
+        assert response.data["results"][0]["title"] == "Newest"
 
 
 class TestQuestionAPI:

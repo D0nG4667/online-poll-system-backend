@@ -15,6 +15,21 @@ This document outlines how to test the AI-powered poll insights feature.
    docker-compose restart web
    ```
 
+## Pagination
+
+### REST API
+All list endpoints support pagination via `page` and `page_size` query parameters.
+- Default `page_size`: 20
+- Max `page_size`: 100
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/polls/?page=1&page_size=50"
+```
+
+### GraphQL
+- **Connections**: Use `first`/`last` and `after`/`before` (e.g., `polls(first: 10)`).
+- **Lists**: Use `limit` argument where available (e.g., `topPolls(limit: 5)`).
+
 ## Available GraphQL Operations
 
 ### 1. Ingest Poll Data (Mutation)

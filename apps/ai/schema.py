@@ -38,10 +38,12 @@ class AnalysisRequestType:
 class Query:
     @strawberry.field
     def poll_insight_history(
-        self, info: Info, poll_id: int
+        self, info: Info, poll_id: int, limit: int = 10
     ) -> list[AnalysisRequestType]:
         """Get all AI insights generated for a specific poll."""
-        return AnalysisRequest.objects.filter(poll_id=poll_id).order_by("-created_at")
+        return AnalysisRequest.objects.filter(poll_id=poll_id).order_by("-created_at")[
+            :limit
+        ]
 
 
 @strawberry.type

@@ -57,7 +57,7 @@ class TestPollWorkflows:
         # Filters are probably not set up for options, so we iterate
         option_id = [
             opt["id"]
-            for opt in response.data
+            for opt in response.data["results"]
             if opt["text"] == "Yes" and opt["question"] == q_id
         ][0]
 

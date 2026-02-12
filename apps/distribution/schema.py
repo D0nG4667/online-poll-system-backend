@@ -1,7 +1,7 @@
-
 import strawberry
 import strawberry_django
 from strawberry import auto
+from strawberry.types import Info
 
 from apps.distribution import models
 from apps.distribution.services import DistributionService
@@ -60,7 +60,7 @@ class Query:
 
     @strawberry.field
     def poll_distribution_analytics(
-        self, info, slug: str
+        self, info: Info, slug: str, limit: int = 50
     ) -> PollDistributionSummary | None:
         from apps.distribution.models import DistributionEvent
         from apps.polls.models import Poll
@@ -83,7 +83,7 @@ class Query:
                 total_embed_loads=analytics.filter(
                     event_type=DistributionEvent.EMBED_LOAD
                 ).count(),
-                recent_events=analytics[:50],
+                recent_events=analytics.order_by("-timestamp")[:limit],
             )
         except Poll.DoesNotExist:
             return None
