@@ -1,3 +1,5 @@
+from typing import Any
+
 import pytest
 
 
@@ -7,7 +9,7 @@ class TestGraphQLQueries:
     Tests for GraphQL queries (Polls and AI history).
     """
 
-    def test_query_polls_list(self, graphql_client, poll):
+    def test_query_polls_list(self, graphql_client: Any, poll: Any) -> None:
         """
         Test querying the list of polls.
         """
@@ -32,7 +34,7 @@ class TestGraphQLQueries:
         assert len(data["data"]["polls"]["edges"]) >= 1
         assert data["data"]["polls"]["edges"][0]["node"]["title"] == poll.title
 
-    def test_query_single_poll(self, graphql_client, poll_with_data):
+    def test_query_single_poll(self, graphql_client: Any, poll_with_data: Any) -> None:
         """
         Test querying a single poll with its questions and options.
         """
@@ -64,7 +66,7 @@ class TestGraphQLQueries:
         assert len(poll_res["questions"]) >= 1
         assert len(poll_res["questions"][0]["options"]) >= 1
 
-    def test_query_polls_filter(self, graphql_client, test_user):
+    def test_query_polls_filter(self, graphql_client: Any, test_user: Any) -> None:
         """
         Test filtering polls using GraphQL.
         """
@@ -94,7 +96,9 @@ class TestGraphQLQueries:
         assert "Active Poll" in titles
         assert "Inactive Poll" not in titles
 
-    def test_poll_insight_history(self, graphql_auth_client, poll, test_user):
+    def test_poll_insight_history(
+        self, graphql_auth_client: Any, poll: Any, test_user: Any
+    ) -> None:
         """
         Test querying AI insight history for a poll.
         """
@@ -134,8 +138,8 @@ class TestGraphQLMutations:
     """
 
     def test_generate_poll_from_prompt(
-        self, graphql_auth_client, mock_openai_poll_generation
-    ):
+        self, graphql_auth_client: Any, mock_openai_poll_generation: Any
+    ) -> None:
         """
         Test AI poll generation via GraphQL mutation.
         """
@@ -160,8 +164,11 @@ class TestGraphQLMutations:
         assert gen_poll["provider"] == "openai"
 
     def test_generate_poll_insight(
-        self, graphql_auth_client, poll_with_data, mock_openai_insight_generation
-    ):
+        self,
+        graphql_auth_client: Any,
+        poll_with_data: Any,
+        mock_openai_insight_generation: Any,
+    ) -> None:
         """
         Test AI insight generation via GraphQL mutation.
         """
@@ -184,7 +191,9 @@ class TestGraphQLMutations:
         assert insight["insight"] == mock_openai_insight_generation
         assert insight["provider"] == "openai"
 
-    def test_ingest_poll_data(self, graphql_auth_client, poll_with_data, mocker):
+    def test_ingest_poll_data(
+        self, graphql_auth_client: Any, poll_with_data: Any, mocker: Any
+    ) -> None:
         """
         Test RAG ingestion via GraphQL mutation.
         """
@@ -208,7 +217,9 @@ class TestGraphQLMutations:
         assert "Successfully ingested" in data["data"]["ingestPollData"]
         mock_vs.add_documents.assert_called_once()
 
-    def test_mutation_requires_auth(self, graphql_client, poll_with_data):
+    def test_mutation_requires_auth(
+        self, graphql_client: Any, poll_with_data: Any
+    ) -> None:
         """
         Test that mutations fail without authentication.
         """

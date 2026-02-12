@@ -1,4 +1,9 @@
-from django.http import HttpResponse
+from typing import TYPE_CHECKING
+
+from django.http import HttpRequest, HttpResponse
+
+if TYPE_CHECKING:
+    from rest_framework.request import Request
 from django.shortcuts import get_object_or_404, render
 from django.views import View
 from drf_spectacular.utils import OpenApiTypes, extend_schema
@@ -21,7 +26,7 @@ class PublicPollPageView(View):
     Template-based view for public poll sharing with social metadata.
     """
 
-    def get(self, request, slug):
+    def get(self, request: HttpRequest, slug: str) -> HttpResponse:
         poll = get_object_or_404(Poll, slug=slug, is_active=True)
 
         # Log event asynchronously
@@ -51,7 +56,7 @@ class PublicPollDetailView(views.APIView):
         "by anyone with the shareable link.",
         responses={200: PublicPollSerializer},
     )
-    def get(self, request, slug):
+    def get(self, request: "Request", slug: str) -> Response:
         poll = get_object_or_404(Poll, slug=slug, is_active=True)
 
         # Log event asynchronously
@@ -85,7 +90,7 @@ class PollQRCodeView(views.APIView):
             (200, "image/svg+xml"): OpenApiTypes.BYTE,
         },
     )
-    def get(self, request, slug):
+    def get(self, request: "Request", slug: str) -> HttpResponse:
         poll = get_object_or_404(Poll, slug=slug, is_active=True)
 
         img_format = request.query_params.get("format", "png")
@@ -118,10 +123,10 @@ class PollEmbedView(views.APIView):
         description="Returns the iframe embed snippet and canonical public URL.",
         responses={200: PollDistributionInfoSerializer},
     )
-    def get(self, request, slug):
+    def get(self, request: "Request", slug: str) -> Response:
         poll = get_object_or_404(Poll, slug=slug, is_active=True)
 
-        # Log event
+        # Log event asynchronously
         log_distribution_event_task.delay(
             poll.id,
             DistributionEvent.EMBED_LOAD,
@@ -155,7 +160,7 @@ class PollDistributionAnalyticsView(views.APIView):
         ),
         responses={200: PollDistributionAnalyticsResponseSerializer},
     )
-    def get(self, request, slug):
+    def get(self, request: "Request", slug: str) -> Response:
         poll = get_object_or_404(Poll, slug=slug, created_by=request.user)
         analytics = DistributionAnalytics.objects.filter(poll=poll)
 

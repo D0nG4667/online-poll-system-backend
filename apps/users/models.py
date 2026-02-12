@@ -8,13 +8,13 @@ from .managers import CustomUserManager
 
 
 class User(AbstractUser, UUIDModel, TimeStampedModel):
-    username = None
+    username = None  # type: ignore[assignment]
     email = models.EmailField(_("email address"), unique=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
-    objects = CustomUserManager()
+    objects = CustomUserManager()  # type: ignore[assignment, misc]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.email

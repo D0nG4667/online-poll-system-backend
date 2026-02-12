@@ -1,7 +1,8 @@
+from typing import Any
+
 import pytest
 from django.core.cache import cache
 
-from apps.polls.models import Poll, Vote
 from apps.polls.tasks import aggregate_votes, send_poll_notification
 
 
@@ -11,7 +12,7 @@ class TestPollTasks:
     Tests for Celery tasks in the polls app.
     """
 
-    def test_aggregate_votes_success(self, poll_with_data):
+    def test_aggregate_votes_success(self, poll_with_data: Any) -> None:
         """
         Test that aggregate_votes correctly calculates counts and updates cache.
         """
@@ -37,14 +38,14 @@ class TestPollTasks:
         q2 = poll_with_data.questions.get(order=2)
         assert cached_data[q2.id]["total_votes"] == 3
 
-    def test_aggregate_votes_poll_not_found(self):
+    def test_aggregate_votes_poll_not_found(self) -> None:
         """
         Test task behavior when poll ID doesn't exist.
         """
         result = aggregate_votes(9999)
         assert "not found" in result
 
-    def test_send_poll_notification_closed(self, poll):
+    def test_send_poll_notification_closed(self, poll: Any) -> None:
         """
         Test sending a closed notification.
         """
@@ -52,7 +53,7 @@ class TestPollTasks:
         assert f"sent to {poll.created_by.email}" in result
         assert "closed" in result
 
-    def test_send_poll_notification_reminder(self, poll):
+    def test_send_poll_notification_reminder(self, poll: Any) -> None:
         """
         Test sending a reminder notification.
         """
@@ -60,25 +61,27 @@ class TestPollTasks:
         assert f"sent to {poll.created_by.email}" in result
         assert "reminder" in result
 
-    def test_aggregate_votes_retry_on_exception(self, poll, mocker):
+    def test_aggregate_votes_retry_on_exception(self, poll: Any, mocker: Any) -> None:
         """
         Test that aggregate_votes retries when an exception occurs.
         """
         # Mock Poll.objects.get to raise an exception once
-        mock_get = mocker.patch(
+        mocker.patch(
             "apps.polls.models.Poll.objects.get", side_effect=Exception("DB Error")
         )
 
         # We need to mock 'self.retry' which is available when bind=True
-        # Since we're calling the function directly, we need to handle the bind=True aspect:
+        # Since we're calling the function directly, we need to handle the
+        # bind=True aspect:
         # aggregate_votes is a shared_task with bind=True.
-        # Direct call doesn't pass 'self' easily unless we use .apply() or mock the internal logic.
+        # Direct call doesn't pass 'self' easily unless we use .apply() or
+        # mock the internal logic.
 
         # Actually, aggregate_votes and self are passed when called by Celery.
         # For unit testing a bound task directly, it's often easier to test the logic
         # and verify that it hits the retry block.
 
-        with pytest.raises(Exception) as exc:
+        with pytest.raises(Exception, match="DB Error") as exc:
             aggregate_votes(poll.id)
 
         assert "DB Error" in str(exc.value)

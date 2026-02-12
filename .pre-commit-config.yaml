@@ -1,15 +1,74 @@
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
-    hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
-      - id: check-yaml
-      - id: check-added-large-files
-
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.14
+    rev: v0.15.0
     hooks:
       - id: ruff
-        args: [ --fix ]
+        args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.19.1
+    hooks:
+      - id: mypy
+        additional_dependencies: [
+          'django-stubs',
+          'djangorestframework-stubs',
+          'types-requests',
+          'types-PyYAML',
+          'types-python-dateutil',
+          'celery',
+          'django-redis',
+          'django-environ',
+          'sentry-sdk',
+          'strawberry-graphql',
+          'strawberry-graphql-django',
+          'djangorestframework',
+          'django-filter',
+          'drf-spectacular',
+          'django-cors-headers',
+          'django-allauth',
+          'django-anymail',
+          'django-extensions',
+          'psycopg[binary]',
+          'shortuuid',
+          'pyjwt',
+          'langchain',
+          'langchain-google-genai',
+          'langchain-openai',
+          'langchain-postgres',
+          'pillow',
+          'qrcode',
+          'redis',
+          'types-qrcode'
+        ]
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: package.lock.json|uv.lock
+
+  - repo: local
+    hooks:
+      - id: django-check-debug
+        name: Check DEBUG=True in production
+        entry: python scripts/check_debug.py
+        language: system
+        types: [python]
+        files: config/settings/production.py
+        pass_filenames: false
+
+      - id: django-check-migrations
+        name: Check Django Migrations
+        # Use simple python execution to avoid uv/bash issues if env is active
+        entry: python manage.py makemigrations --check --dry-run
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: safety-check
+        name: Safety Check (Vulnerabilities)
+        entry: python scripts/check_safety.py
+        language: system
+        pass_filenames: false

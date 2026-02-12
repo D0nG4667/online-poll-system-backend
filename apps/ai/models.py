@@ -12,5 +12,5 @@ class AnalysisRequest(models.Model):
     provider_used = models.CharField(max_length=50, default="openai")  # openai/gemini
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Analysis by {self.user} on Poll {self.poll_id}"

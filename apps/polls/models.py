@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
@@ -33,14 +35,14 @@ class Poll(models.Model):
         models.Index(fields=["slug"]),
     ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.title
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         super().save(*args, **kwargs)
 
     @property
-    def is_open(self):
+    def is_open(self) -> bool:
         now = timezone.now()
         if not self.is_active:
             return False
@@ -68,13 +70,14 @@ class Question(models.Model):
         _("Type"), max_length=20, choices=QUESTION_TYPES, default="single"
     )
     order = models.PositiveIntegerField(_("Order"), default=0)
+    slug = RandomSlugField(length=8, unique=True, null=False)
 
     class Meta:
         ordering = ["order", "id"]
         verbose_name = _("Question")
         verbose_name_plural = _("Questions")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.text
 
 
@@ -88,13 +91,14 @@ class Option(models.Model):
     )
     text = models.CharField(_("Option Text"), max_length=255)
     order = models.PositiveIntegerField(_("Order"), default=0)
+    slug = RandomSlugField(length=8, unique=True, null=False)
 
     class Meta:
         ordering = ["order", "id"]
         verbose_name = _("Option")
         verbose_name_plural = _("Options")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.text
 
 
@@ -114,13 +118,14 @@ class Vote(models.Model):
     )  # For text answers, this might be null?
     # But for single/multiple choice it's required.
     created_at = models.DateTimeField(auto_now_add=True)
+    slug = RandomSlugField(length=8, unique=True, null=False)
 
     class Meta:
         verbose_name = _("Vote")
         verbose_name_plural = _("Votes")
         unique_together = ["user", "question"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.user} voted on {self.question}"
 
 
@@ -140,5 +145,5 @@ class PollView(models.Model):
         verbose_name_plural = _("Poll Views")
         ordering = ["-created_at"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"View of {self.poll.title} at {self.created_at}"

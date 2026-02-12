@@ -31,6 +31,7 @@ dependencies = [
     "shortuuid>=1.0.13",
     "strawberry-graphql>=0.291.0",
     "strawberry-graphql-django>=0.75.0",
+    "types-qrcode>=8.2.0.20250914",
     "uvicorn>=0.40.0",
 ]
 
@@ -43,22 +44,67 @@ dev = [
     "pytest-cov>=4.1.0",
     "ruff>=0.14.14",
     "pytest-mock>=3.15.1",
+    "mypy>=1.8.0",
+    "django-stubs>=4.2.7",
+    "djangorestframework-stubs>=3.14.5",
+    "types-requests>=2.31.0",
+    "types-PyYAML>=6.0.12.12",
+    "types-python-dateutil>=2.8.19.14",
+    "safety>=3.0.1",
 ]
 
-[tool.ruff]
-line-length = 88
-target-version = "py313"
-extend-exclude = ["*/migrations/*"]
-
-[tool.ruff.lint]
-select = ["E", "F", "I", "U", "N", "S", "B", "A", "C4", "T20"]
-ignore = [
-    "S101", # Allow assert for pytest
-    "S104", # Allow 0.0.0.0 for Docker local dev
-    "S105", # Ignore false positive hardcoded password for settings strings
-]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings.local"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
 addopts = "--nomigrations --reuse-db"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+extend-exclude = ["*/migrations/*", "manage.py", "config/settings/*"]
+
+[tool.ruff.lint]
+# E: pycodestyle, F: Pyflakes, I: isort, U: pyupgrade, N: pep8-naming
+# S: bandit (security), B: bugbear, A: flake8-builtins, C4: comprehensions
+# T20: flake8-print, PT: pytest-style, DJ: flake8-django, C90: complexity
+select = ["E", "F", "I", "U", "N", "S", "B", "A", "C4", "T20", "PT", "DJ", "C90"]
+ignore = [
+    "S101", # Allow assert for pytest
+    "S104", # Allow 0.0.0.0 for Docker local dev
+    "S105", # Ignore false positive hardcoded password for settings strings
+    "DJ001", # Avoid enforcing null checks on string fields (contentious)
+    "DJ008", # Allow functions in models.__str__
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "config"]
+
+[tool.mypy]
+python_version = "3.13"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+strict_equality = true
+plugins = ["mypy_django_plugin.main"]
+
+[[tool.mypy.overrides]]
+module = [
+    "celery.*",
+    "environ.*",
+    "allauth.*",
+    "qrcode.*"
+]
+ignore_missing_imports = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings.local"

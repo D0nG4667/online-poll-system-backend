@@ -1,6 +1,8 @@
 import logging
 from datetime import timedelta
+from typing import Any, cast
 
+from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.db.models import Count
 from django.db.models.functions import TruncDay, TruncMonth
@@ -10,6 +12,8 @@ from apps.polls.models import Poll, PollView, Vote
 
 logger = logging.getLogger(__name__)
 
+User = get_user_model()
+
 
 class AnalyticsService:
     """
@@ -18,7 +22,7 @@ class AnalyticsService:
     """
 
     @staticmethod
-    def get_period_delta(period):
+    def get_period_delta(period: str) -> timedelta:
         periods = {
             "7d": timedelta(days=7),
             "30d": timedelta(days=30),
@@ -28,7 +32,7 @@ class AnalyticsService:
         return periods.get(period, timedelta(days=30))
 
     @classmethod
-    def get_stats(cls, user, period="30d"):
+    def get_stats(cls, user: Any, period: str = "30d") -> dict[str, Any]:
         """
         Calculates total polls, responses, views, and response rate.
         Includes percentage change from the previous equivalent period.
@@ -36,7 +40,7 @@ class AnalyticsService:
         cache_key = f"analytics:stats:{user.id}:{period}"
         cached_data = cache.get(cache_key)
         if cached_data:
-            return cached_data
+            return cast(dict[str, Any], cached_data)
 
         now = timezone.now()
         delta = cls.get_period_delta(period)
@@ -69,7 +73,7 @@ class AnalyticsService:
             poll__created_by=user, created_at__range=(prev_start_date, start_date)
         ).count()
 
-        def calc_change(current, prev):
+        def calc_change(current: int, prev: int) -> float:
             if prev == 0:
                 return 100.0 if current > 0 else 0.0
             return round(((current - prev) / prev) * 100, 2)
@@ -84,20 +88,28 @@ class AnalyticsService:
             "avg_response_rate": round((current_votes / current_views * 100), 2)
             if current_views > 0
             else 0.0,
+            "response_rate_change": calc_change(
+                int(
+                    (current_votes / current_views * 100) if current_views > 0 else 0.0
+                ),
+                int((prev_votes / prev_views * 100) if prev_views > 0 else 0.0),
+            ),
         }
 
         cache.set(cache_key, stats, timeout=600)  # 10 minutes
-        return stats
+        return cast(dict[str, Any], stats)
 
     @classmethod
-    def get_trends(cls, user, period="30d"):
+    def get_trends(
+        cls, user: Any, period: str = "30d"
+    ) -> dict[str, list[dict[str, Any]]]:
         """
         Returns time-series data for poll creation and response rates.
         """
         cache_key = f"analytics:trends:{user.id}:{period}"
         cached_data = cache.get(cache_key)
         if cached_data:
-            return cached_data
+            return cast(dict[str, list[dict[str, Any]]], cached_data)
 
         now = timezone.now()
         delta = cls.get_period_delta(period)
@@ -138,4 +150,4 @@ class AnalyticsService:
         }
 
         cache.set(cache_key, trends, timeout=900)  # 15 minutes
-        return trends
+        return cast(dict[str, list[dict[str, Any]]], trends)

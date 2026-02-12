@@ -1,3 +1,5 @@
+from typing import cast
+
 import strawberry
 import strawberry_django
 from django.contrib.auth import get_user_model
@@ -41,15 +43,23 @@ class Query:
         self, info: Info, poll_id: int, limit: int = 10
     ) -> list[AnalysisRequestType]:
         """Get all AI insights generated for a specific poll."""
-        return AnalysisRequest.objects.filter(poll_id=poll_id).order_by("-created_at")[
-            :limit
-        ]
+        # We need to cast the queryset to list or use strawberry_django's magic.
+        # But for list[AnalysisRequestType], Strawberry expects a list of objects
+        # that match the type. AnalysisRequest objects match AnalysisRequestType.
+        return cast(
+            list[AnalysisRequestType],
+            list(
+                AnalysisRequest.objects.filter(poll_id=poll_id).order_by("-created_at")[
+                    :limit
+                ]
+            ),
+        )
 
 
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    def ingest_poll_data(self, info: Info, poll_id: int) -> str:
+    def ingest_poll_data(self, info: Info, poll_slug: str) -> str:
         """
         Ingest poll data into the vector store for AI analysis.
         Requires authentication.
@@ -59,14 +69,14 @@ class Mutation:
 
         try:
             rag = RAGService()
-            rag.ingest_poll_data(poll_id)
-            return f"Successfully ingested poll {poll_id} data into vector store"
+            rag.ingest_poll_data(poll_slug)
+            return f"Successfully ingested poll {poll_slug} data into vector store"
         except Exception as e:
             raise Exception(f"Failed to ingest poll data: {str(e)}") from e
 
     @strawberry.mutation
     def generate_poll_insight(
-        self, info: Info, poll_id: int, query: str
+        self, info: Info, poll_slug: str, query: str
     ) -> PollInsightType:
         """
         Generate AI-powered insights for a poll based on a user query.
@@ -77,11 +87,11 @@ class Mutation:
 
         try:
             # Get or create poll
-            poll = Poll.objects.get(id=poll_id)
+            poll = Poll.objects.get(slug=poll_slug)
 
             # Generate insight using RAG
             rag = RAGService()
-            insight = rag.generate_insight(poll_id, query)
+            insight = rag.generate_insight(poll_slug, query)
 
             # Determine which provider was used
             provider = "openai" if rag.openai_key else "gemini"
@@ -97,7 +107,7 @@ class Mutation:
 
             return PollInsightType(query=query, insight=insight, provider=provider)
         except Poll.DoesNotExist as e:
-            raise Exception(f"Poll with id {poll_id} not found") from e
+            raise Exception(f"Poll with slug {poll_slug} not found") from e
         except Exception as e:
             raise Exception(f"Failed to generate insight: {str(e)}") from e
 

@@ -6,22 +6,22 @@ from locust import HttpUser, between, task
 class PollSystemUser(HttpUser):
     wait_time = between(1, 5)
 
-    def on_start(self):
+    def on_start(self) -> None:
         """
         Setup: Login or obtain token if necessary.
         For simplicity in this basic load test, we'll hit public endpoints.
         """
         pass
 
-    @task(3)
-    def view_polls(self):
+    @task(3)  # type: ignore[untyped-decorator]
+    def view_polls(self) -> None:
         """
         Simulate users browsing the poll list.
         """
         self.client.get("/api/v1/polls/")
 
-    @task(2)
-    def view_poll_detail(self):
+    @task(2)  # type: ignore[untyped-decorator]
+    def view_poll_detail(self) -> None:
         """
         Simulate users looking at a specific poll.
         """
@@ -29,8 +29,8 @@ class PollSystemUser(HttpUser):
         poll_id = secrets.choice(range(1, 6))
         self.client.get(f"/api/v1/polls/{poll_id}/")
 
-    @task(1)
-    def query_graphql(self):
+    @task(1)  # type: ignore[untyped-decorator]
+    def query_graphql(self) -> None:
         """
         Simulate GraphQL query traffic.
         """
@@ -48,8 +48,8 @@ class PollSystemUser(HttpUser):
         """
         self.client.post("/graphql/", json={"query": query})
 
-    @task(1)
-    def view_user_me(self):
+    @task(1)  # type: ignore[untyped-decorator]
+    def view_user_me(self) -> None:
         """
         Simulate hitting the authenticated 'me' endpoint.
         Requires valid authentication headers in a real scenario.

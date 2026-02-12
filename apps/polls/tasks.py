@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from celery import shared_task
 from django.core.cache import cache
@@ -12,8 +13,8 @@ logger = logging.getLogger(__name__)
 CACHE_TIMEOUT = 60 * 5
 
 
-@shared_task(bind=True, max_retries=3, default_retry_delay=10)
-def aggregate_votes(self, poll_id):
+@shared_task(bind=True)  # type: ignore[untyped-decorator]
+def aggregate_votes(self: Any, poll_id: int) -> dict[str, Any] | str:
     """
     Recalculates and caches vote counts for a specific poll asynchronously.
 
@@ -73,8 +74,10 @@ def aggregate_votes(self, poll_id):
         raise self.retry(exc=exc) from exc
 
 
-@shared_task
-def send_poll_notification(poll_id, notification_type="closed"):
+@shared_task  # type: ignore[untyped-decorator]
+def send_poll_notification(
+    poll_id: int, notification_type: str = "closed"
+) -> str | None:
     """
     Sends notifications related to poll events (e.g., poll closed, results available).
 
@@ -106,5 +109,7 @@ def send_poll_notification(poll_id, notification_type="closed"):
 
     except Poll.DoesNotExist:
         logger.warning(f"Poll {poll_id} not found for notification.")
+        return None
     except Exception as e:
         logger.error(f"Failed to send notification: {e}")
+        return None

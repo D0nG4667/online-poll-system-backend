@@ -22,7 +22,7 @@ urlpatterns = [
     ),
     path("ingest/", IngestPollDataView.as_view(), name="ingest-poll-data"),
     path(
-        "insights/history/<int:poll_id>/",
+        "insights/history/<str:slug>/",
         PollInsightHistoryView.as_view(),
         name="insight-history",
     ),

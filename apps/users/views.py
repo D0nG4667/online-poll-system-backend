@@ -1,3 +1,5 @@
+from typing import cast
+
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, permissions
 
@@ -12,5 +14,5 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 
     serializer_class = UserSerializer
 
-    def get_object(self):
-        return self.request.user
+    def get_object(self) -> User:
+        return cast(User, self.request.user)

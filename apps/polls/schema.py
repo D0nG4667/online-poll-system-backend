@@ -32,15 +32,17 @@ class PollOrder:
 @strawberry_django.type(models.Option)
 class OptionType:
     id: auto
+    slug: auto
     text: auto
     order: auto
 
     @strawberry.field
-    def vote_count(self) -> int:
+    def vote_count(self: models.Option) -> int:
         # Try to fetch from cache generic pattern: poll_{id}_votes
         try:
             # We need the poll_id. Option -> Question -> Poll
-            poll_id = self.question.poll_id
+            poll = self.question.poll
+            poll_id = poll.id
             cache_key = f"poll_{poll_id}_votes"
             cached_data = cache.get(cache_key)
 
@@ -48,7 +50,7 @@ class OptionType:
                 # Structure: { question_id: { 'options': { opt_id: count }, ... } }
                 q_data = cached_data.get(self.question_id)
                 if q_data:
-                    return q_data.get("options", {}).get(self.id, 0)
+                    return int(q_data.get("options", {}).get(self.id, 0))
         except Exception as e:
             logger.warning(
                 f"Failed to fetch vote_count from cache for Option {self.id}: {e}"
@@ -60,21 +62,23 @@ class OptionType:
 @strawberry_django.type(models.Question)
 class QuestionType:
     id: auto
+    slug: auto
     text: auto
     question_type: auto
     order: auto
     options: list[OptionType]
 
     @strawberry.field
-    def total_votes(self) -> int:
+    def total_votes(self: models.Question) -> int:
         try:
-            cache_key = f"poll_{self.poll_id}_votes"
+            poll = self.poll
+            cache_key = f"poll_{poll.id}_votes"
             cached_data = cache.get(cache_key)
 
             if cached_data:
                 q_data = cached_data.get(self.id)
                 if q_data:
-                    return q_data.get("total_votes", 0)
+                    return int(q_data.get("total_votes", 0))
         except Exception as e:
             logger.warning(
                 f"Failed to fetch total_votes from cache for Question {self.id}: {e}"

@@ -1,7 +1,9 @@
 from django.db import migrations
 import shortuuid
 
-def populate_slugs(apps, schema_editor):
+from typing import Any
+
+def populate_slugs(apps: Any, schema_editor: Any) -> None:
     Question = apps.get_model("polls", "Question")
     Option = apps.get_model("polls", "Option")
     Vote = apps.get_model("polls", "Vote")

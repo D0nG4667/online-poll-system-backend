@@ -18,7 +18,7 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.http import JsonResponse
+from django.http import HttpRequest, JsonResponse  # noqa: F401
 from django.urls import include, path
 from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.views import (
@@ -30,13 +30,13 @@ from strawberry.django.views import GraphQLView
 
 from config.schema import schema
 
-
-def trigger_error(request):
-    division_by_zero = 1 / 0
+# def trigger_error(request: HttpRequest) -> HttpResponse:
+#     _ = 1 / 0
+#     return HttpResponse(status=500)
 
 
 urlpatterns = [
-    path("sentry-debug/", trigger_error),
+    # path("sentry-debug/", trigger_error),
     path("admin/", admin.site.urls),
     path("graphql/", csrf_exempt(GraphQLView.as_view(schema=schema))),
     # Frontend Callback Mocks (to avoid 404s when frontend is not running)

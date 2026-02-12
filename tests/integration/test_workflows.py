@@ -1,6 +1,8 @@
-import json
+import json  # noqa: I001
 import pytest
+from typing import Any
 from django.urls import reverse
+
 from apps.polls.models import Vote
 
 
@@ -10,7 +12,9 @@ class TestPollWorkflows:
     Integration tests for complete user workflows.
     """
 
-    def test_complete_poll_lifecycle(self, auth_client, other_user_auth_client):
+    def test_complete_poll_lifecycle(
+        self, auth_client: Any, other_user_auth_client: Any
+    ) -> None:
         """
         Scenario: User creates a poll, adds questions/options, activates it,
         and another user votes.
@@ -70,8 +74,11 @@ class TestPollWorkflows:
         assert Vote.objects.filter(question_id=q_id, option_id=option_id).count() == 1
 
     def test_ai_poll_workflow(
-        self, auth_client, mock_openai_poll_generation, mock_openai_insight_generation
-    ):
+        self,
+        auth_client: Any,
+        mock_openai_poll_generation: Any,
+        mock_openai_insight_generation: Any,
+    ) -> None:
         """
         Scenario: User generates a poll with AI, reviews it, publishes it,
         and then generates insights.
@@ -121,7 +128,9 @@ class TestPollWorkflows:
         assert response.status_code == 200
         assert response.data["insight"] == mock_openai_insight_generation
 
-    def test_rag_workflow(self, auth_client, poll_with_data, mocker):
+    def test_rag_workflow(
+        self, auth_client: Any, poll_with_data: Any, mocker: Any
+    ) -> None:
         """
         Scenario: Ingest poll data to vector store, then retrieve history.
         """

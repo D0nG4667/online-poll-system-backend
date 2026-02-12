@@ -35,5 +35,5 @@ class DistributionAnalytics(models.Model):
         verbose_name_plural = _("Distribution Analytics")
         ordering = ["-timestamp"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.poll.title} - {self.event_type} at {self.timestamp}"

@@ -1,3 +1,5 @@
+from typing import cast
+
 import strawberry
 import strawberry_django
 from strawberry import auto
@@ -40,7 +42,7 @@ class Query:
         from apps.polls.models import Poll
 
         try:
-            return Poll.objects.get(slug=slug, is_active=True)
+            return cast(PollType, Poll.objects.get(slug=slug, is_active=True))
         except Poll.DoesNotExist:
             return None
 
@@ -83,7 +85,10 @@ class Query:
                 total_embed_loads=analytics.filter(
                     event_type=DistributionEvent.EMBED_LOAD
                 ).count(),
-                recent_events=analytics.order_by("-timestamp")[:limit],
+                recent_events=cast(
+                    list[DistributionAnalyticsType],
+                    list(analytics.order_by("-timestamp")[:limit]),
+                ),
             )
         except Poll.DoesNotExist:
             return None

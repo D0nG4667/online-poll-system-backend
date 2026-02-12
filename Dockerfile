@@ -69,5 +69,12 @@ EXPOSE 8000
 # Copy uv binary from Astral's official image (useful for runtime management commands if needed)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
+# Collect static files
+RUN uv run python manage.py collectstatic --noinput
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8000/health/ || exit 1
+
 # Start the application using Gunicorn
 CMD ["uv", "run", "gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]

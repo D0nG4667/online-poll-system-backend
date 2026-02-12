@@ -1,16 +1,17 @@
-import json
+from django.contrib.auth import get_user_model  # noqa: I001
 from django.test import TestCase
-from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
+
 from apps.polls.models import Poll
 
 User = get_user_model()
 
 
 class PaginationTests(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.user = User.objects.create_user(
-            email="test@example.com", password="password"
+            email="test@example.com",
+            password="password",  # noqa: S106
         )
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
@@ -24,7 +25,7 @@ class PaginationTests(TestCase):
                 is_active=True,
             )
 
-    def test_graphql_pagination(self):
+    def test_graphql_pagination(self) -> None:
         query = """
         query {
             polls(first: 5) {
@@ -45,45 +46,45 @@ class PaginationTests(TestCase):
         )
         data = response.json()
 
-        self.assertIn("data", data)
-        self.assertIn("polls", data["data"])
+        assert "data" in data
+        assert "polls" in data["data"]
         polls_data = data["data"]["polls"]
 
-        self.assertIn("edges", polls_data)
-        self.assertIn("pageInfo", polls_data)
-        self.assertEqual(len(polls_data["edges"]), 5)
-        self.assertTrue(polls_data["pageInfo"]["hasNextPage"])
+        assert "edges" in polls_data
+        assert "pageInfo" in polls_data
+        assert len(polls_data["edges"]) == 5
+        assert polls_data["pageInfo"]["hasNextPage"]
 
-    def test_rest_pagination(self):
+    def test_rest_pagination(self) -> None:
         response = self.client.get("/api/v1/polls/")
-        self.assertEqual(response.status_code, 200)
+        assert response.status_code == 200
         data = response.json()
 
-        self.assertIn("count", data)
-        self.assertIn("next", data)
-        self.assertIn("previous", data)
-        self.assertIn("results", data)
+        assert "count" in data
+        assert "next" in data
+        assert "previous" in data
+        assert "results" in data
 
-        self.assertEqual(data["count"], 25)
-        self.assertEqual(len(data["results"]), 20)
-        self.assertIsNotNone(data["next"])
-        self.assertIsNone(data["previous"])
+        assert data["count"] == 25
+        assert len(data["results"]) == 20
+        assert data["next"] is not None
+        assert data["previous"] is None
 
         # Test second page
         response = self.client.get(data["next"])
-        self.assertEqual(response.status_code, 200)
+        assert response.status_code == 200
         data = response.json()
 
-        self.assertEqual(len(data["results"]), 5)
-        self.assertIsNone(data["next"])
-        self.assertIsNotNone(data["previous"])
+        assert len(data["results"]) == 5
+        assert data["next"] is None
+        assert data["previous"] is not None
 
-    def test_rest_page_size(self):
+    def test_rest_page_size(self) -> None:
         # Test custom page size
         response = self.client.get("/api/v1/polls/?page_size=10")
-        self.assertEqual(response.status_code, 200)
+        assert response.status_code == 200
         data = response.json()
 
-        self.assertEqual(len(data["results"]), 10)
-        self.assertEqual(data["count"], 25)
-        self.assertIsNotNone(data["next"])
+        assert len(data["results"]) == 10
+        assert data["count"] == 25
+        assert data["next"] is not None

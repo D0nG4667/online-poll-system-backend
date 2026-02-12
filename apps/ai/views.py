@@ -1,8 +1,13 @@
+from typing import TYPE_CHECKING
+
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+if TYPE_CHECKING:
+    from rest_framework.request import Request
 
 from apps.ai.models import AnalysisRequest
 from apps.ai.serializers import (
@@ -32,7 +37,7 @@ class GeneratePollFromPromptView(APIView):
         description="Generate a poll structure using AI from a natural language prompt",
         tags=["AI"],
     )
-    def post(self, request):
+    def post(self, request: "Request") -> Response:
         serializer = GeneratePollRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -74,30 +79,34 @@ class GeneratePollInsightView(APIView):
         description="Generate AI insights about a specific poll",
         tags=["AI"],
     )
-    def post(self, request):
+    def post(self, request: "Request") -> Response:
         serializer = GenerateInsightRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        poll_id = serializer.validated_data["poll_id"]
+        poll_slug = serializer.validated_data["poll_slug"]
         query = serializer.validated_data["query"]
 
         try:
-            poll = Poll.objects.get(id=poll_id)
+            poll = Poll.objects.get(slug=poll_slug)
         except Poll.DoesNotExist:
             return Response(
-                {"error": f"Poll with id {poll_id} not found"},
+                {"error": f"Poll with slug {poll_slug} not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
         try:
             rag = RAGService()
-            insight = rag.generate_insight(poll_id, query)
+            # Pass poll.id to service since it still expects ID for now,
+            # or update service to take slug.
+            # Plan says: "Service methods like generate_insight will accept slug"
+            # So let's pass slug to service.
+            insight = rag.generate_insight(poll.slug, query)
 
             provider = "openai" if rag.openai_key else "gemini"
 
             # Save to database
             AnalysisRequest.objects.create(
-                user=request.user,
+                user=request.user if request.user.is_authenticated else None,  # type: ignore
                 poll=poll,
                 query=query,
                 response=insight,
@@ -133,19 +142,22 @@ class IngestPollDataView(APIView):
         description="Ingest poll data into vector database for AI analysis",
         tags=["AI"],
     )
-    def post(self, request):
+    def post(self, request: "Request") -> Response:
         serializer = IngestPollDataRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        poll_id = serializer.validated_data["poll_id"]
+        poll_slug = serializer.validated_data["poll_slug"]
 
         try:
             rag = RAGService()
-            rag.ingest_poll_data(poll_id)
+            # Service will accept slug
+            rag.ingest_poll_data(poll_slug)
 
             response_data = {
-                "message": f"Successfully ingested poll {poll_id} data into vector store",
-                "poll_id": poll_id,
+                "message": (
+                    f"Successfully ingested poll {poll_slug} data into vector store"
+                ),
+                "poll_slug": poll_slug,
             }
 
             return Response(response_data, status=status.HTTP_200_OK)
@@ -169,8 +181,8 @@ class PollInsightHistoryView(APIView):
         description="Get history of AI-generated insights for a poll",
         tags=["AI"],
     )
-    def get(self, request, poll_id):
-        insights = AnalysisRequest.objects.filter(poll_id=poll_id).order_by(
+    def get(self, request: "Request", slug: str) -> Response:
+        insights = AnalysisRequest.objects.filter(poll__slug=slug).order_by(
             "-created_at"
         )
         serializer = AnalysisRequestSerializer(insights, many=True)

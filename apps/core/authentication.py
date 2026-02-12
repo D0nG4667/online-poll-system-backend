@@ -3,10 +3,14 @@ Custom authentication classes for supporting multiple auth methods.
 """
 
 import logging
+from typing import TYPE_CHECKING, Any
 
 import sentry_sdk
 from rest_framework import exceptions
 from rest_framework.authentication import BaseAuthentication
+
+if TYPE_CHECKING:
+    from rest_framework.request import Request
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +21,7 @@ class MultiAuthenticationBackend(BaseAuthentication):
     Tries Session first, falls back to JWT.
     """
 
-    def authenticate(self, request):
+    def authenticate(self, request: "Request") -> Any:
         sentry_sdk.add_breadcrumb(
             category="auth", message="Authentication attempt", level="info"
         )

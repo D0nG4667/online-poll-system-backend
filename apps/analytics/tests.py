@@ -1,17 +1,20 @@
 from datetime import timedelta
-from django.test import TestCase
+
 from django.contrib.auth import get_user_model
+from django.test import TestCase
 from django.utils import timezone
-from apps.polls.models import Poll, Question, Vote, Option
+
 from apps.analytics.services import AnalyticsService
+from apps.polls.models import Option, Poll, Question, Vote
 
 User = get_user_model()
 
 
 class AnalyticsServiceTests(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.user = User.objects.create_user(
-            email="test@example.com", password="password"
+            email="test@example.com",
+            password="password",  # noqa: S106
         )
         self.poll = Poll.objects.create(
             title="Test Poll",
@@ -28,15 +31,15 @@ class AnalyticsServiceTests(TestCase):
             question=self.question, text="Option 1", order=1
         )
 
-    def test_get_trends(self):
+    def test_get_trends(self) -> None:
         # Create a vote
         Vote.objects.create(user=self.user, question=self.question, option=self.option)
 
         trends = AnalyticsService.get_trends(self.user, period="30d")
 
-        self.assertIn("poll_creation", trends)
-        self.assertIn("response_rate", trends)
-        self.assertTrue(len(trends["poll_creation"]) > 0)
-        self.assertTrue(len(trends["response_rate"]) > 0)
-        self.assertEqual(trends["poll_creation"][0]["value"], 1)
-        self.assertEqual(trends["response_rate"][0]["value"], 1)
+        assert "poll_creation" in trends
+        assert "response_rate" in trends
+        assert len(trends["poll_creation"]) > 0
+        assert len(trends["response_rate"]) > 0
+        assert trends["poll_creation"][0]["value"] == 1
+        assert trends["response_rate"][0]["value"] == 1

@@ -2,7 +2,9 @@ import shortuuid
 from django.db import migrations
 
 
-def populate_slugs(apps, schema_editor):
+from typing import Any
+
+def populate_slugs(apps: Any, schema_editor: Any) -> None:
     Poll = apps.get_model("polls", "Poll")
     for poll in Poll.objects.all():
         if not poll.slug:

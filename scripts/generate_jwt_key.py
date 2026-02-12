@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Generate JWT private key for environment variable."""
 
-from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 # Generate RSA key pair
 private_key = rsa.generate_private_key(
@@ -20,9 +20,9 @@ pem = private_key.private_bytes(
 # Convert to single-line format for .env file
 single_line = pem.decode().replace("\n", "\\n")
 
-print("=" * 80)
-print("JWT PRIVATE KEY FOR .ENV FILE")
-print("=" * 80)
-print("\nCopy the following line to your .env file:")
-print(f"\nJWT_PRIVATE_KEY={single_line}")
-print("\n" + "=" * 80)
+print("=" * 80)  # noqa: T201
+print("JWT PRIVATE KEY FOR .ENV FILE")  # noqa: T201
+print("=" * 80)  # noqa: T201
+print("\nCopy the following line to your .env file:")  # noqa: T201
+print(f"\nJWT_PRIVATE_KEY={single_line}")  # noqa: T201
+print("\n" + "=" * 80)  # noqa: T201

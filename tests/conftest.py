@@ -1,4 +1,7 @@
+# mypy: ignore-errors
 import json
+from collections.abc import Callable
+from typing import Any
 
 import pytest
 from allauth.headless.tokens.strategies.jwt.internal import create_access_token
@@ -9,7 +12,7 @@ User = get_user_model()
 
 
 @pytest.fixture
-def api_client():
+def api_client() -> APIClient:
     """
     Standard DRF APIClient.
     """
@@ -17,19 +20,25 @@ def api_client():
 
 
 @pytest.fixture
-def user_factory(db):
+def user_factory(db: Any) -> Callable[..., Any]:
     """
     Factory to create users for testing.
     """
 
-    def create_user(email="test@example.com", password="password123", **kwargs):
+    def create_user(
+        email: str = "test@example.com",
+        password: str | None = None,
+        **kwargs: Any,
+    ) -> Any:
+        if password is None:
+            password = "password123"  # noqa: S106
         return User.objects.create_user(email=email, password=password, **kwargs)
 
     return create_user
 
 
 @pytest.fixture
-def test_user(user_factory):
+def test_user(user_factory: Callable[..., Any]) -> Any:
     """
     A default test user.
     """
@@ -37,7 +46,7 @@ def test_user(user_factory):
 
 
 @pytest.fixture
-def auth_client(api_client, test_user):
+def auth_client(api_client: APIClient, test_user: Any) -> APIClient:
     """
     An APIClient authenticated with session/force_authenticate.
     """
@@ -47,7 +56,7 @@ def auth_client(api_client, test_user):
 
 
 @pytest.fixture
-def jwt_auth_client(api_client, test_user):
+def jwt_auth_client(api_client: APIClient, test_user: Any) -> APIClient:
     """
     An APIClient pre-configured with a JWT Bearer token.
     """
@@ -63,12 +72,14 @@ def jwt_auth_client(api_client, test_user):
 
 
 @pytest.fixture
-def graphql_client(api_client):
+def graphql_client(api_client: APIClient) -> Callable[..., Any]:
     """
     Client for GraphQL testing.
     """
 
-    def _query(query, variables=None, **kwargs):
+    def _query(
+        query: str, variables: dict[str, Any] | None = None, **kwargs: Any
+    ) -> Any:
         return api_client.post(
             "/graphql/",
             data={"query": query, "variables": variables or {}},
@@ -80,12 +91,14 @@ def graphql_client(api_client):
 
 
 @pytest.fixture
-def graphql_auth_client(auth_client):
+def graphql_auth_client(auth_client: APIClient) -> Callable[..., Any]:
     """
     Authenticated client for GraphQL testing.
     """
 
-    def _query(query, variables=None, **kwargs):
+    def _query(
+        query: str, variables: dict[str, Any] | None = None, **kwargs: Any
+    ) -> Any:
         return auth_client.post(
             "/graphql/",
             data={"query": query, "variables": variables or {}},
@@ -102,7 +115,7 @@ def graphql_auth_client(auth_client):
 
 
 @pytest.fixture
-def poll_with_data(db, test_user):
+def poll_with_data(db: Any, test_user: Any) -> Any:
     """
     Create a complete poll with questions, options, and votes for AI testing.
     """
@@ -137,8 +150,8 @@ def poll_with_data(db, test_user):
     Option.objects.create(question=q2, text="No", order=2)  # opt2_2 unused
 
     # Add some votes
-    user2 = User.objects.create_user(email="voter1@example.com", password="pass")
-    user3 = User.objects.create_user(email="voter2@example.com", password="pass")
+    user2 = User.objects.create_user(email="voter1@example.com", password="pass")  # noqa: S106
+    user3 = User.objects.create_user(email="voter2@example.com", password="pass")  # noqa: S106
 
     Vote.objects.create(user=test_user, question=q1, option=opt1_1)
     Vote.objects.create(user=user2, question=q1, option=opt1_1)
@@ -152,7 +165,7 @@ def poll_with_data(db, test_user):
 
 
 @pytest.fixture
-def mock_ai_service(mocker):
+def mock_ai_service(mocker: Any) -> dict[str, str | dict[str, Any]]:
     """
     A unified mock for AI services (Poll and Insight generation).
     """
@@ -172,9 +185,12 @@ def mock_ai_service(mocker):
             },
         ],
     }
-    insight_response = "Based on the poll data, users show high awareness of issues including climate change."
+    insight_response = (
+        "Based on the poll data, users show high awareness of issues including"
+        " climate change."
+    )
 
-    def mock_invoke(messages, **kwargs):
+    def mock_invoke(messages: Any, **kwargs: Any) -> Any:
         # Check messages to decide what to return
         prompt = str(messages)
         mock_msg = mocker.Mock()
@@ -192,17 +208,17 @@ def mock_ai_service(mocker):
 
 
 @pytest.fixture
-def mock_openai_poll_generation(mock_ai_service):
+def mock_openai_poll_generation(mock_ai_service: dict[str, Any]) -> Any:
     return mock_ai_service["poll"]
 
 
 @pytest.fixture
-def mock_openai_insight_generation(mock_ai_service):
+def mock_openai_insight_generation(mock_ai_service: dict[str, Any]) -> Any:
     return mock_ai_service["insight"]
 
 
 @pytest.fixture
-def mock_pgvector(mocker):
+def mock_pgvector(mocker: Any) -> Any:
     """
     Mock PGVector for RAG ingestion testing.
     """
@@ -220,7 +236,7 @@ def mock_pgvector(mocker):
 
 
 @pytest.fixture
-def mock_openai_error(mocker):
+def mock_openai_error(mocker: Any) -> Any:
     """
     Mock OpenAI API error for testing error handling.
     """
@@ -237,7 +253,7 @@ def mock_openai_error(mocker):
 
 
 @pytest.fixture
-def poll(db, test_user):
+def poll(db: Any, test_user: Any) -> Any:
     """
     A simple poll created by the test user.
     """
@@ -251,7 +267,7 @@ def poll(db, test_user):
 
 
 @pytest.fixture
-def other_user(user_factory):
+def other_user(user_factory: Callable[..., Any]) -> Any:
     """
     Another test user.
     """
@@ -259,7 +275,7 @@ def other_user(user_factory):
 
 
 @pytest.fixture
-def other_user_auth_client(api_client, other_user):
+def other_user_auth_client(api_client: APIClient, other_user: Any) -> APIClient:
     """
     An APIClient authenticated with 'other_user'.
     """
@@ -269,7 +285,7 @@ def other_user_auth_client(api_client, other_user):
 
 
 @pytest.fixture
-def question(db, poll):
+def question(db: Any, poll: Any) -> Any:
     """
     A sample question for a poll.
     """
@@ -281,7 +297,7 @@ def question(db, poll):
 
 
 @pytest.fixture
-def option(db, question):
+def option(db: Any, question: Any) -> Any:
     """
     A sample option for a question.
     """

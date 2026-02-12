@@ -1,14 +1,21 @@
+from typing import TYPE_CHECKING, Any
+
 from django.contrib.auth.base_user import BaseUserManager
 from django.utils.translation import gettext_lazy as _
 
+if TYPE_CHECKING:
+    from .models import User
 
-class CustomUserManager(BaseUserManager):
+
+class CustomUserManager(BaseUserManager["User"]):
     """
     Custom user model manager where email is the unique identifiers
     for authentication instead of usernames.
     """
 
-    def create_user(self, email, password, **extra_fields):
+    def create_user(
+        self, email: str, password: str | None = None, **extra_fields: Any
+    ) -> "User":
         """
         Create and save a User with the given email and password.
         """
@@ -20,7 +27,9 @@ class CustomUserManager(BaseUserManager):
         user.save()
         return user
 
-    def create_superuser(self, email, password, **extra_fields):
+    def create_superuser(
+        self, email: str, password: str | None = None, **extra_fields: Any
+    ) -> "User":
         """
         Create and save a SuperUser with the given email and password.
         """

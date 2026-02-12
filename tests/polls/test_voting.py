@@ -1,10 +1,12 @@
+from typing import Any
+
 import pytest
-from apps.polls.models import Poll, Question, Option, Vote
-from django.utils import timezone
+
+from apps.polls.models import Option, Poll, Question, Vote
 
 
-@pytest.fixture
-def poll_data(test_user):
+@pytest.fixture  # type: ignore[untyped-decorator]
+def poll_data(test_user: Any) -> Any:
     poll = Poll.objects.create(
         title="Test Poll", created_by=test_user, description="Testing voting logic"
     )
@@ -16,7 +18,7 @@ def poll_data(test_user):
 
 @pytest.mark.django_db
 class TestVoting:
-    def test_unique_vote_constraint(self, test_user, poll_data):
+    def test_unique_vote_constraint(self, test_user: Any, poll_data: Any) -> None:
         """
         Verify that a user can only vote once per question.
         """
@@ -26,10 +28,13 @@ class TestVoting:
         Vote.objects.create(user=test_user, question=question, option=option_a)
 
         # Second vote attempt on same question should fail
-        with pytest.raises(Exception):  # IntegrityError
+        # Second vote attempt on same question should fail
+        from django.db import IntegrityError
+
+        with pytest.raises(IntegrityError):
             Vote.objects.create(user=test_user, question=question, option=option_b)
 
-    def test_vote_count_aggregation(self, user_factory, poll_data):
+    def test_vote_count_aggregation(self, user_factory: Any, poll_data: Any) -> None:
         """
         Verify that votes count correctly (simulating aggregation logic).
         """

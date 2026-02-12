@@ -1,10 +1,11 @@
 import json
 import logging
 import os
+from typing import Any, cast
 
 import sentry_sdk
-
 from django.conf import settings
+from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
@@ -21,13 +22,15 @@ class RAGService:
     3. Querying the Vector Store (PGVector).
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.openai_key = settings.OPENAI_API_KEY
         self.gemini_key = settings.GEMINI_API_KEY
-        self._embedding_model = None
+        if self.openai_key:
+            os.environ["OPENAI_API_KEY"] = self.openai_key
+        self._embedding_model: OpenAIEmbeddings | None = None
 
     @property
-    def embedding_model(self):
+    def embedding_model(self) -> OpenAIEmbeddings:
         """
         Returns the embedding model.
         Using OpenAIEmbeddings for consistency.
@@ -35,25 +38,22 @@ class RAGService:
         if not self._embedding_model:
             if not self.openai_key:
                 logger.warning("OPENAI_API_KEY not found. Embeddings may fail.")
-            self._embedding_model = OpenAIEmbeddings(
-                openai_api_key=self.openai_key, model="text-embedding-3-small"
-            )
+            self._embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
         return self._embedding_model
 
-    def get_llm(self, fallback_mode=True):
+    def get_llm(self, fallback_mode: bool = True) -> BaseChatModel:
         """
         Returns an LLM instance with fallback strategy.
         Priority:
         1. OpenAI (gpt-4o-mini or gpt-3.5-turbo)
         2. Google Gemini (gemini-pro) if fallback_mode is True and OpenAI fails/missing.
         """
-        llm = None
+        llm: BaseChatModel | None = None
 
         # Try primary: OpenAI
         if self.openai_key:
             try:
                 llm = ChatOpenAI(
-                    openai_api_key=self.openai_key,
                     model="gpt-4o-mini",
                     temperature=0.3,
                 )
@@ -83,13 +83,19 @@ class RAGService:
 
         return llm
 
-    def get_vector_store(self):
+    def get_vector_store(self) -> PGVector:
         """
         Returns a PGVector store instance.
         """
         db_url = os.getenv("DATABASE_URL")
         if not db_url:
             raise ValueError("DATABASE_URL not set in environment.")
+
+        # SQLAlchemy requires postgresql+psycopg:// for psycopg 3
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql+psycopg://", 1)
+        elif db_url.startswith("postgresql://"):
+            db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
 
         collection_name = "poll_embeddings"
 
@@ -100,7 +106,7 @@ class RAGService:
             use_jsonb=True,
         )
 
-    def ingest_poll_data(self, poll_id: int):
+    def ingest_poll_data(self, poll_slug: str) -> str:
         """
         Ingest poll data into the vector store.
         Converts Poll + Questions + Options into searchable text chunks.
@@ -109,11 +115,11 @@ class RAGService:
 
         try:
             poll = Poll.objects.prefetch_related("questions__options__votes").get(
-                id=poll_id
+                slug=poll_slug
             )
-        except Poll.DoesNotExist:
-            logger.error(f"Poll with id {poll_id} not found.")
-            raise ValueError(f"Poll with id {poll_id} not found.")
+        except Poll.DoesNotExist as e:
+            logger.error(f"Poll with slug {poll_slug} not found.")
+            raise ValueError(f"Poll with slug {poll_slug} not found.") from e
 
         # Format data for embedding
         text_chunks = []
@@ -151,9 +157,11 @@ class RAGService:
         # Store in Vector DB
         vector_store = self.get_vector_store()
         vector_store.add_documents(docs)
-        logger.info(f"Successfully ingested {len(docs)} documents for Poll {poll_id}.")
+        logger.info(
+            f"Successfully ingested {len(docs)} documents for Poll {poll.title}."
+        )
 
-        return f"Successfully ingested {len(docs)} text chunks for Poll {poll_id}."
+        return f"Successfully ingested {len(docs)} text chunks for Poll {poll.title}."
 
     def retrieve_context(self, query: str, poll_id: int) -> str:
         """
@@ -173,13 +181,21 @@ class RAGService:
             logger.error(f"Error retrieving context: {e}")
             return ""
 
-    def generate_insight(self, poll_id: int, user_query: str) -> str:
+    def generate_insight(self, poll_slug: str, user_query: str) -> str:
         """
         Orchestrates the RAG flow: Retrieve -> Generate.
         """
+        # Resolve slug to ID for vector store lookup
+        from apps.polls.models import Poll
+
+        try:
+            poll_id = Poll.objects.values_list("id", flat=True).get(slug=poll_slug)
+        except Poll.DoesNotExist as e:
+            raise ValueError(f"Poll with slug {poll_slug} not found.") from e
+
         sentry_sdk.add_breadcrumb(
             category="ai",
-            message=f"Generating insight for poll {poll_id}",
+            message=f"Generating insight for poll {poll_slug}",
             level="info",
             data={"query": user_query},
         )
@@ -188,7 +204,8 @@ class RAGService:
 
         if not context_text:
             logger.warning(
-                f"No relevant context found for query: '{user_query}' on Poll {poll_id}"
+                f"No relevant context found for query: '{user_query}' "
+                f"on Poll {poll_slug}"
             )
             context_text = "No specific poll data found for this query."
 
@@ -209,20 +226,20 @@ class RAGService:
         try:
             llm = self.get_llm(fallback_mode=False)
             response = llm.invoke(messages)
-            return response.content
+            return str(response.content)
         except Exception as e:
             logger.warning(f"Primary LLM failed: {e}. Attempting fallback...")
             if self.gemini_key:
                 try:
                     llm_fallback = self.get_llm(fallback_mode=True)
                     response = llm_fallback.invoke(messages)
-                    return response.content
+                    return str(response.content)
                 except Exception as fb_err:
                     logger.error(f"Fallback failed: {fb_err}")
                     return "Service unavailable."
             return "Service unavailable."
 
-    def generate_poll_structure(self, user_prompt: str) -> dict:
+    def generate_poll_structure(self, user_prompt: str) -> dict[str, Any]:
         """
         Generate a complete poll structure from a natural language description.
         Returns a structured dict with poll title, description, questions, and options.
@@ -275,7 +292,7 @@ class RAGService:
             # Try primary LLM
             llm = self.get_llm(fallback_mode=False)
             response = llm.invoke(messages)
-            content = response.content.strip()
+            content = str(response.content).strip()
 
             # Clean up markdown formatting if present
             if content.startswith("```json"):
@@ -294,7 +311,7 @@ class RAGService:
             logger.info(
                 f"Successfully generated poll structure: {poll_structure['title']}"
             )
-            return poll_structure
+            return cast(dict[str, Any], poll_structure)
 
         except Exception as e:
             logger.error(f"Primary LLM failed for poll generation: {e}")
@@ -303,7 +320,7 @@ class RAGService:
                 try:
                     llm_fallback = self.get_llm(fallback_mode=True)
                     response = llm_fallback.invoke(messages)
-                    content = response.content.strip()
+                    content = str(response.content).strip()
 
                     # Clean up markdown
                     if content.startswith("```json"):
@@ -318,9 +335,9 @@ class RAGService:
                         "Generated poll structure using fallback LLM: "
                         f"{poll_structure['title']}"
                     )
-                    return poll_structure
+                    return cast(dict[str, Any], poll_structure)
                 except Exception as fb_err:
                     logger.error(f"Fallback LLM also failed: {fb_err}")
 
             # Return error structure
-            raise ValueError(f"Failed to generate poll structure: {str(e)}")
+            raise ValueError(f"Failed to generate poll structure: {str(e)}") from e

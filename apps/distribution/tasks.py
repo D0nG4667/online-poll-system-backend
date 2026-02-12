@@ -4,10 +4,15 @@ from django.apps import apps
 from apps.distribution.models import DistributionAnalytics
 
 
-@shared_task
+@shared_task  # type: ignore[untyped-decorator]
 def log_distribution_event_task(
-    poll_id, event_type, ip_address=None, user_agent=None, referrer=None, metadata=None
-):
+    poll_id: int,
+    event_type: str,
+    ip_address: str | None = None,
+    user_agent: str | None = None,
+    referrer: str | None = None,
+    metadata: dict | None = None,
+) -> None:
     """
     Background task to log a distribution event to the database.
     """
@@ -18,8 +23,8 @@ def log_distribution_event_task(
             poll=poll,
             event_type=event_type,
             ip_address=ip_address,
-            user_agent=user_agent,
-            referrer=referrer,
+            user_agent=user_agent or "",
+            referrer=referrer or "",
             metadata=metadata or {},
         )
     except Poll.DoesNotExist:

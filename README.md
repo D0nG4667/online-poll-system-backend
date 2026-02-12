@@ -77,4 +77,30 @@ docker-compose exec web uv run pytest --cov=apps --cov-report=term-missing
 - **Telemetry**: Sentry integration for real-time error tracking.
 
 ---
-Built with ❤️ by Gabriel Okundaye (ProDev Backend Engineer)
+## 📄 License
+
+This project is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International License**.
+
+This project is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License - see the [LICENSE](LICENSE) file for details.
+
+You are free to:
+- **Share** — copy and redistribute the material in any medium or format
+- **Adapt** — remix, transform, and build upon the material
+
+Under the following terms:
+- **Attribution** — You must give appropriate credit, provide a link to the license, and indicate if changes were made.
+- **NonCommercial** — You may not use the material for commercial purposes.
+
+For more details, see the [LICENSE](LICENSE) file.
+
+### **📩 Commercial Inquiries**
+
+For commercial licensing, custom implementations, or collaboration opportunities, please contact the author.
+
+<br>
+<hr>
+<p align="center">
+  <b>Made with ❤️ by <a href="https://linkedin.com/in/dr-gabriel-okundaye" target="_blank">Gabriel Okundaye - Plaude Poll Team</a></b>
+  <br>
+  🌐 <a href="https://gabcares.xyz" target="_blank">gabcares.xyz</a> &nbsp;|&nbsp; 🐙 <a href="https://github.com/D0nG4667" target="_blank">GitHub</a>
+</p>
