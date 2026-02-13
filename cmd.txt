@@ -1,0 +1,18 @@
+docker compose exec web python manage.py test apps.users.tests
+
+
+docker compose exec web python manage.py makemigrations polls
+
+docker compose exec web python manage.py makemigrations ai
+
+docker-compose exec web uv run python manage.py makemigrations --empty ai --name enable_vector_extension
+
+docker-compose exec web uv run pytest -v
+
+docker-compose exec web uv run pytest -v --tb=short
+
+python -m py_compile tests\performance\locustfile.py
+
+docker-compose exec web uv run locust -f tests/performance/locustfile.py --host http://localhost:8000
+
+docker compose exec web python manage.py seed_analytics --polls 300 --votes 500 --views 2000
