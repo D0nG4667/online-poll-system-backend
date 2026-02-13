@@ -1,6 +1,6 @@
 from .base import *  # noqa
 from .base import env
-import dj_database_url
+# import dj_database_url # Removed to avoid extra dependency
 
 DEBUG = False
 SECRET_KEY = env("DJANGO_SECRET_KEY")
@@ -12,10 +12,9 @@ FRONTEND_URL = env("FRONTEND_URL")
 
 # Database (Neon)
 DATABASES = {
-    "default": dj_database_url.config(
-        default=env("DATABASE_URL"),
+    "default": env.db(
+        "DATABASE_URL",
         conn_max_age=600,
-        conn_health_checks=True,
         ssl_require=True,
     )
 }
