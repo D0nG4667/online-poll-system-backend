@@ -75,7 +75,7 @@ RUN export DJANGO_SECRET_KEY=dummy && \
     export DATABASE_URL=sqlite:////tmp/db.sqlite3 && \
     export REDIS_URL=redis://localhost:6379/0 && \
     export BREVO_API_KEY=dummy && \
-    export JWT_PRIVATE_KEY="$(uv run python -c 'from cryptography.hazmat.primitives import serialization; from cryptography.hazmat.primitives.asymmetric import rsa; key = rsa.generate_private_key(public_exponent=65537, key_size=2048); print(key.private_bytes(encoding=serialization.Encoding.PEM, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serialization.NoEncryption()).decode(\"utf-8\").replace(\"\n\", \"\\n\"))')" && \
+    export JWT_PRIVATE_KEY="$(python -c 'from cryptography.hazmat.primitives import serialization; from cryptography.hazmat.primitives.asymmetric import rsa; key = rsa.generate_private_key(public_exponent=65537, key_size=2048); print(key.private_bytes(encoding=serialization.Encoding.PEM, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serialization.NoEncryption()).decode("utf-8").replace("\n", "\\n"))')" && \
     uv run python manage.py collectstatic --noinput # pragma: allowlist secret
 
 # Healthcheck
