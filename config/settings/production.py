@@ -12,12 +12,10 @@ FRONTEND_URL = env("FRONTEND_URL")
 
 # Database (Neon)
 DATABASES = {
-    "default": env.db(
-        "DATABASE_URL",
-        conn_max_age=600,
-        ssl_require=True,
-    )
+    "default": env.db("DATABASE_URL")
 }
+DATABASES["default"]["CONN_MAX_AGE"] = 600
+DATABASES["default"]["OPTIONS"] = {"sslmode": "require"}
 
 # Cache (Upstash Redis)
 CACHES = {
