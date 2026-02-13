@@ -70,11 +70,12 @@ EXPOSE 8000
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Collect static files
-RUN DJANGO_SECRET_KEY=dummy \
-    DATABASE_URL=sqlite:////tmp/db.sqlite3 \
-    REDIS_URL=redis://localhost:6379/0 \
-    BREVO_API_KEY=dummy \
-    JWT_PRIVATE_KEY="dummy\nkey" uv run python manage.py collectstatic --noinput # pragma: allowlist secret
+# Collect static files
+RUN export DJANGO_SECRET_KEY=dummy && \
+    export DATABASE_URL=sqlite:////tmp/db.sqlite3 && \
+    export REDIS_URL=redis://localhost:6379/0 && \
+    export BREVO_API_KEY=dummy && \
+    export JWT_PRIVATE_KEY="dummy_key" && uv run python manage.py collectstatic --noinput # pragma: allowlist secret
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
