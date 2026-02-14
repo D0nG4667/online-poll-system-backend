@@ -1,0 +1,94 @@
+# ---- Stage 1: Builder ----
+FROM python:3.13-slim-bookworm AS builder
+
+# Copy uv binary from Astral's official image
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Create app directory
+RUN mkdir /app
+WORKDIR /app
+
+# Environment optimizations
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Install build dependencies (compilers, headers, pkg-config, Postgres client dev libs)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential gcc pkg-config libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy dependency files first (for caching)
+COPY pyproject.toml uv.lock /app/
+
+# Install dependencies only (no project code yet)
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project
+
+# Copy project code
+COPY . /app
+
+# Sync the project (installs the project itself if configured as package, or just finalizes venv)
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen
+
+# Precompile bytecode
+ENV UV_COMPILE_BYTECODE=1
+
+# ---- Stage 2: Runtime ----
+FROM python:3.13-slim-bookworm
+
+# Create non-root user and app dir
+RUN useradd -m -r appuser && \
+    mkdir /app && \
+    chown -R appuser /app
+
+WORKDIR /app
+
+# Copy app code + .venv together from builder
+COPY --from=builder --chown=appuser:appuser /app /app
+
+# Install runtime libraries:
+# - libpq5: for Postgres
+# - supervisor: for monolithic process management
+# - ca-certificates: for secure Upstash Redis connections
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    supervisor \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Ensure .venv/bin is first on PATH
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV DJANGO_SETTINGS_MODULE=config.settings.production
+
+# Switch to non-root user
+USER appuser
+
+# Expose the application port
+EXPOSE 10000
+
+# Copy uv binary (useful for runtime management commands if needed)
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Copy supervisord config
+COPY --chown=appuser:appuser supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Collect static files (dummy env vars for build time)
+RUN export DJANGO_SECRET_KEY=dummy && \
+    export DATABASE_URL=sqlite:////tmp/db.sqlite3 && \
+    export REDIS_URL=redis://localhost:6379/0 && \
+    export BREVO_API_KEY=dummy && \
+    export FRONTEND_URL="https://dummy.com" && \
+    export JWT_PRIVATE_KEY="$(python -c 'from cryptography.hazmat.primitives import serialization; from cryptography.hazmat.primitives.asymmetric import rsa; key = rsa.generate_private_key(public_exponent=65537, key_size=2048); print(key.private_bytes(encoding=serialization.Encoding.PEM, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serialization.NoEncryption()).decode("utf-8").replace("\n", "\\n"))')" && \
+    uv run python manage.py collectstatic --noinput
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:10000/healthz/ || exit 1
+
+# Start supervisord directly
+CMD ["/bin/bash", "-c", "uv run python manage.py migrate --noinput && exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"]
