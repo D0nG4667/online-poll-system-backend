@@ -90,13 +90,17 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Run Tests inside Docker
+        env:
+          TEST_DB_URL: postgres://poll_user:poll_password@localhost:5432/poll_db # pragma: allowlist secret
+          TEST_SECRET_KEY: dummy-test-secret # pragma: allowlist secret
+          TEST_JWT_KEY: "dummy" # pragma: allowlist secret
         run: |
           docker run --rm \
             --network host \
-            -e DATABASE_URL=postgres://poll_user:poll_password@localhost:5432/poll_db # pragma: allowlist secret
+            -e DATABASE_URL="$TEST_DB_URL" \
             -e DJANGO_SETTINGS_MODULE=config.settings.test \
-            -e DJANGO_SECRET_KEY=dummy-test-secret # pragma: allowlist secret
-            -e JWT_PRIVATE_KEY="dummy" # pragma: allowlist secret
+            -e DJANGO_SECRET_KEY="$TEST_SECRET_KEY" \
+            -e JWT_PRIVATE_KEY="$TEST_JWT_KEY" \
             poll-backend:test \
             uv run pytest --cov=apps --cov-report=xml --cov-fail-under=80
 

@@ -7,7 +7,7 @@ from .base import env, BASE_DIR
 # OR we override it here conceptually.
 # NOTE: If base.py raises ImproperlyConfigured, this file won't even load.
 # Implication: CI/Test environment MUST set DJANGO_SECRET_KEY to *something*, even if we override it here.
-SECRET_KEY = "insecure-test-key-do-not-use-in-production"
+SECRET_KEY = "insecure-test-key-do-not-use-in-production" # pragma: allowlist secret
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
