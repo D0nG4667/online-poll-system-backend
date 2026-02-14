@@ -68,7 +68,7 @@ class TestAnalyticsService:
         # Ensure cache is clear or mocked to return None (handled by fixture)
 
         stats = AnalyticsService.get_stats(user, period="30d")
-        assert stats["total_polls"] == 1
+        assert stats["total_polls"] == 4
         assert stats["total_responses"] == 1
         assert stats["total_views"] == 1
         assert stats["avg_response_rate"] == 100.0

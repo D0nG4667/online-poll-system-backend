@@ -75,7 +75,7 @@ def jwt_auth_client(api_client: APIClient, test_user: Any) -> APIClient:
     )
     pem = key.private_bytes(
         encoding=serialization.Encoding.PEM,
-        format=serialization.PrivateFormat.PKCS8,
+        format=serialization.PrivateFormat.TraditionalOpenSSL,
         encryption_algorithm=serialization.NoEncryption(),
     )
 
@@ -218,6 +218,8 @@ def mock_ai_service(mocker: Any) -> dict[str, str | dict[str, Any]]:
     mock_llm.invoke.side_effect = mock_invoke
 
     mocker.patch("apps.ai.services.RAGService.get_llm", return_value=mock_llm)
+    # Ensure RAGService sees an OpenAI key so provider is "openai"
+    mocker.patch("django.conf.settings.OPENAI_API_KEY", "test-key")
     return {"poll": poll_response, "insight": insight_response}
 
 
