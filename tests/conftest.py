@@ -65,6 +65,25 @@ def jwt_auth_client(api_client: APIClient, test_user: Any) -> APIClient:
     session = SessionStore()
     session.create()
 
+    # Generate a valid RSA private key for testing
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa
+
+    key = rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=2048,
+    )
+    pem = key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    )
+
+    # Patch the setting just for this test client
+    from django.conf import settings
+
+    settings.JWT_PRIVATE_KEY = pem.decode("utf-8")
+
     # create_access_token returns just the token string
     access_token = create_access_token(user=test_user, session=session, claims={})
     api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
@@ -77,9 +96,7 @@ def graphql_client(api_client: APIClient) -> Callable[..., Any]:
     Client for GraphQL testing.
     """
 
-    def _query(
-        query: str, variables: dict[str, Any] | None = None, **kwargs: Any
-    ) -> Any:
+    def _query(query: str, variables: dict[str, Any] | None = None, **kwargs: Any) -> Any:
         return api_client.post(
             "/graphql/",
             data={"query": query, "variables": variables or {}},
@@ -96,9 +113,7 @@ def graphql_auth_client(auth_client: APIClient) -> Callable[..., Any]:
     Authenticated client for GraphQL testing.
     """
 
-    def _query(
-        query: str, variables: dict[str, Any] | None = None, **kwargs: Any
-    ) -> Any:
+    def _query(query: str, variables: dict[str, Any] | None = None, **kwargs: Any) -> Any:
         return auth_client.post(
             "/graphql/",
             data={"query": query, "variables": variables or {}},
@@ -186,8 +201,7 @@ def mock_ai_service(mocker: Any) -> dict[str, str | dict[str, Any]]:
         ],
     }
     insight_response = (
-        "Based on the poll data, users show high awareness of issues including"
-        " climate change."
+        "Based on the poll data, users show high awareness of issues including climate change."
     )
 
     def mock_invoke(messages: Any, **kwargs: Any) -> Any:
@@ -225,12 +239,8 @@ def mock_pgvector(mocker: Any) -> Any:
     mock_vector_store = mocker.Mock()
     mock_vector_store.add_documents.return_value = None
 
-    mocker.patch(
-        "apps.ai.services.PGVector.from_documents", return_value=mock_vector_store
-    )
-    mocker.patch(
-        "apps.ai.services.PGVector.from_existing_index", return_value=mock_vector_store
-    )
+    mocker.patch("apps.ai.services.PGVector.from_documents", return_value=mock_vector_store)
+    mocker.patch("apps.ai.services.PGVector.from_existing_index", return_value=mock_vector_store)
 
     return mock_vector_store
 

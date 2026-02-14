@@ -76,7 +76,7 @@ urlpatterns = [
     path("api/v1/users/", include("apps.users.urls")),
     path("api/v1/", include("apps.polls.urls")),
     path("api/v1/ai/", include("apps.ai.urls")),
-    path("api/v1/", include("apps.distribution.urls")),
+    path("api/v1/distribution/", include("apps.distribution.urls")),
 ]
 
 

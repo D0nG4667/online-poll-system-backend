@@ -62,9 +62,7 @@ class AnalyticsService:
         ).count()
 
         # Previous Period Data (for % change)
-        prev_polls_count = polls.filter(
-            created_at__range=(prev_start_date, start_date)
-        ).count()
+        prev_polls_count = polls.filter(created_at__range=(prev_start_date, start_date)).count()
         prev_votes = Vote.objects.filter(
             question__poll__created_by=user,
             created_at__range=(prev_start_date, start_date),
@@ -89,9 +87,7 @@ class AnalyticsService:
             if current_views > 0
             else 0.0,
             "response_rate_change": calc_change(
-                int(
-                    (current_votes / current_views * 100) if current_views > 0 else 0.0
-                ),
+                int((current_votes / current_views * 100) if current_views > 0 else 0.0),
                 int((prev_votes / prev_views * 100) if prev_views > 0 else 0.0),
             ),
         }
@@ -100,9 +96,7 @@ class AnalyticsService:
         return cast(dict[str, Any], stats)
 
     @classmethod
-    def get_trends(
-        cls, user: Any, period: str = "30d"
-    ) -> dict[str, list[dict[str, Any]]]:
+    def get_trends(cls, user: Any, period: str = "30d") -> dict[str, list[dict[str, Any]]]:
         """
         Returns time-series data for poll creation and response rates.
         """
@@ -129,9 +123,7 @@ class AnalyticsService:
 
         # Vote Trend
         vote_trends = (
-            Vote.objects.filter(
-                question__poll__created_by=user, created_at__gte=start_date
-            )
+            Vote.objects.filter(question__poll__created_by=user, created_at__gte=start_date)
             .annotate(date=trunc_func("created_at"))
             .values("date")
             .annotate(value=Count("id"))
@@ -140,12 +132,10 @@ class AnalyticsService:
 
         trends = {
             "poll_creation": [
-                {"date": str(t["date"]), "value": float(t["value"])}
-                for t in poll_trends
+                {"date": str(t["date"]), "value": float(t["value"])} for t in poll_trends
             ],
             "response_rate": [
-                {"date": str(t["date"]), "value": float(t["value"])}
-                for t in vote_trends
+                {"date": str(t["date"]), "value": float(t["value"])} for t in vote_trends
             ],
         }
 

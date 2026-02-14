@@ -16,9 +16,7 @@ class RandomSlugField(models.SlugField):
         kwargs.setdefault("unique", True)
         kwargs.setdefault("blank", True)
         kwargs.setdefault("db_index", True)
-        kwargs.setdefault(
-            "default", ""
-        )  # Principal fix: provide dummy default for migrations
+        kwargs.setdefault("default", "")  # Principal fix: provide dummy default for migrations
         super().__init__(*args, **kwargs)
 
     def deconstruct(self) -> Any:

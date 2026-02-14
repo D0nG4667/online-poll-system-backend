@@ -75,9 +75,7 @@ class TestPollAPI:
 
         assert response.status_code == 403
 
-    def test_create_poll_sets_created_by(
-        self, auth_client: Any, test_user: Any
-    ) -> None:
+    def test_create_poll_sets_created_by(self, auth_client: Any, test_user: Any) -> None:
         """
         Test that the created_by field is set to the current user.
         """
@@ -130,9 +128,7 @@ class TestPollAPI:
         Test filtering polls by active status.
         """
         Poll.objects.create(title="Active Poll", created_by=test_user, is_active=True)
-        Poll.objects.create(
-            title="Inactive Poll", created_by=test_user, is_active=False
-        )
+        Poll.objects.create(title="Inactive Poll", created_by=test_user, is_active=False)
 
         url = reverse("polls:poll-list")
 
@@ -193,9 +189,7 @@ class TestQuestionAPI:
         assert response.status_code == 201
         assert response.data["text"] == data["text"]
 
-    def test_update_question_authenticated(
-        self, auth_client: Any, question: Any
-    ) -> None:
+    def test_update_question_authenticated(self, auth_client: Any, question: Any) -> None:
         """
         Test updating a question.
         """
@@ -206,9 +200,7 @@ class TestQuestionAPI:
         assert response.status_code == 200
         assert response.data["text"] == "Updated Question Text"
 
-    def test_delete_question_authenticated(
-        self, auth_client: Any, question: Any
-    ) -> None:
+    def test_delete_question_authenticated(self, auth_client: Any, question: Any) -> None:
         """
         Test deleting a question.
         """

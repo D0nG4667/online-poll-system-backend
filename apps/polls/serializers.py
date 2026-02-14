@@ -4,9 +4,7 @@ from .models import Option, Poll, Question, Vote
 
 
 class OptionSerializer(serializers.ModelSerializer):
-    question = serializers.SlugRelatedField(
-        slug_field="slug", queryset=Question.objects.all()
-    )
+    question = serializers.SlugRelatedField(slug_field="slug", queryset=Question.objects.all())
 
     class Meta:
         model = Option
@@ -24,9 +22,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 
 class PollSerializer(serializers.ModelSerializer):
     questions = QuestionSerializer(many=True, read_only=True)
-    created_by: serializers.StringRelatedField = serializers.StringRelatedField(
-        read_only=True
-    )
+    created_by: serializers.StringRelatedField = serializers.StringRelatedField(read_only=True)
     is_open = serializers.BooleanField(read_only=True)
 
     class Meta:
@@ -48,15 +44,9 @@ class PollSerializer(serializers.ModelSerializer):
 
 
 class VoteSerializer(serializers.ModelSerializer):
-    user: serializers.StringRelatedField = serializers.StringRelatedField(
-        read_only=True
-    )
-    question = serializers.SlugRelatedField(
-        slug_field="slug", queryset=Question.objects.all()
-    )
-    option = serializers.SlugRelatedField(
-        slug_field="slug", queryset=Option.objects.all()
-    )
+    user: serializers.StringRelatedField = serializers.StringRelatedField(read_only=True)
+    question = serializers.SlugRelatedField(slug_field="slug", queryset=Question.objects.all())
+    option = serializers.SlugRelatedField(slug_field="slug", queryset=Option.objects.all())
 
     class Meta:
         model = Vote

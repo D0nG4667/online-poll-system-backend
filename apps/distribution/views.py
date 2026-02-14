@@ -155,9 +155,7 @@ class PollDistributionAnalyticsView(views.APIView):
     @extend_schema(
         tags=["Analytics"],
         summary="Get Distribution Analytics",
-        description=(
-            "Retrieves aggregated distribution metrics & recent events for poll owners."
-        ),
+        description=("Retrieves aggregated distribution metrics & recent events for poll owners."),
         responses={200: PollDistributionAnalyticsResponseSerializer},
     )
     def get(self, request: "Request", slug: str) -> Response:
@@ -165,15 +163,9 @@ class PollDistributionAnalyticsView(views.APIView):
         analytics = DistributionAnalytics.objects.filter(poll=poll)
 
         summary = {
-            "total_link_opens": analytics.filter(
-                event_type=DistributionEvent.LINK_OPEN
-            ).count(),
-            "total_qr_scans": analytics.filter(
-                event_type=DistributionEvent.QR_SCAN
-            ).count(),
-            "total_embed_loads": analytics.filter(
-                event_type=DistributionEvent.EMBED_LOAD
-            ).count(),
+            "total_link_opens": analytics.filter(event_type=DistributionEvent.LINK_OPEN).count(),
+            "total_qr_scans": analytics.filter(event_type=DistributionEvent.QR_SCAN).count(),
+            "total_embed_loads": analytics.filter(event_type=DistributionEvent.EMBED_LOAD).count(),
         }
 
         serializer = PollDistributionAnalyticsResponseSerializer(

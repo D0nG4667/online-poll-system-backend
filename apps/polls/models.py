@@ -86,9 +86,7 @@ class Option(models.Model):
     An Option for a Question.
     """
 
-    question = models.ForeignKey(
-        Question, on_delete=models.CASCADE, related_name="options"
-    )
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="options")
     text = models.CharField(_("Option Text"), max_length=255)
     order = models.PositiveIntegerField(_("Order"), default=0)
     slug = RandomSlugField(length=8, unique=True, null=False)
@@ -110,9 +108,7 @@ class Vote(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="votes"
     )
-    question = models.ForeignKey(
-        Question, on_delete=models.CASCADE, related_name="votes"
-    )
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="votes")
     option = models.ForeignKey(
         Option, on_delete=models.CASCADE, related_name="votes"
     )  # For text answers, this might be null?

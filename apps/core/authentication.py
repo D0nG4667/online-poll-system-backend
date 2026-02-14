@@ -22,9 +22,7 @@ class MultiAuthenticationBackend(BaseAuthentication):
     """
 
     def authenticate(self, request: "Request") -> Any:
-        sentry_sdk.add_breadcrumb(
-            category="auth", message="Authentication attempt", level="info"
-        )
+        sentry_sdk.add_breadcrumb(category="auth", message="Authentication attempt", level="info")
         from allauth.headless.contrib.rest_framework.authentication import (
             XSessionTokenAuthentication,
         )

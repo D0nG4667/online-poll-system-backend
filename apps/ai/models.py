@@ -13,4 +13,4 @@ class AnalysisRequest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return f"Analysis by {self.user} on Poll {self.poll_id}"
+        return f"Analysis by {self.user} on Poll {self.poll.slug}"

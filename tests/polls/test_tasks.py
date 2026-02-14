@@ -66,9 +66,7 @@ class TestPollTasks:
         Test that aggregate_votes retries when an exception occurs.
         """
         # Mock Poll.objects.get to raise an exception once
-        mocker.patch(
-            "apps.polls.models.Poll.objects.get", side_effect=Exception("DB Error")
-        )
+        mocker.patch("apps.polls.models.Poll.objects.get", side_effect=Exception("DB Error"))
 
         # We need to mock 'self.retry' which is available when bind=True
         # Since we're calling the function directly, we need to handle the

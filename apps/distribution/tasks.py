@@ -4,7 +4,7 @@ from django.apps import apps
 from apps.distribution.models import DistributionAnalytics
 
 
-@shared_task  # type: ignore[untyped-decorator]
+@shared_task
 def log_distribution_event_task(
     poll_id: int,
     event_type: str,

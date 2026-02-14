@@ -59,13 +59,13 @@ class TopPollNode:
 
 @strawberry.type
 class AnalyticsQuery:
-    @strawberry.field(permission_classes=[IsAuthenticated])  # type: ignore[untyped-decorator]
+    @strawberry.field(permission_classes=[IsAuthenticated])
     def analytics_stats(self, info: Info, period: str = "30d") -> AnalyticsStats:
         user = info.context.request.user
         stats_data = AnalyticsService.get_stats(user, period)
         return AnalyticsStats(**stats_data)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])  # type: ignore[untyped-decorator]
+    @strawberry.field(permission_classes=[IsAuthenticated])
     def analytics_trends(self, info: Info, period: str = "30d") -> AnalyticsTrends:
         user = info.context.request.user
         trends_data = AnalyticsService.get_trends(user, period)
@@ -74,10 +74,8 @@ class AnalyticsQuery:
             response_rate=[TrendDataPoint(**r) for r in trends_data["response_rate"]],
         )
 
-    @strawberry.field(permission_classes=[IsAuthenticated])  # type: ignore[untyped-decorator]
-    def top_polls(
-        self, info: Info, period: str = "30d", limit: int = 5
-    ) -> list[TopPollNode]:
+    @strawberry.field(permission_classes=[IsAuthenticated])
+    def top_polls(self, info: Info, period: str = "30d", limit: int = 5) -> list[TopPollNode]:
         user = info.context.request.user
         # Logic to find top polls based on engagement (votes + views)
         polls = (
@@ -118,7 +116,7 @@ class AnalyticsQuery:
 
 @strawberry.type
 class AnalyticsMutation:
-    @strawberry.mutation(permission_classes=[IsAuthenticated])  # type: ignore[untyped-decorator]
+    @strawberry.mutation(permission_classes=[IsAuthenticated])
     def generate_insight(self, info: Info, poll_slug: str, query: str) -> str:
         rag_service = RAGService()
         return rag_service.generate_insight(poll_slug, query)

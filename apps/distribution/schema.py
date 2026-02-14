@@ -76,15 +76,9 @@ class Query:
             analytics = models.DistributionAnalytics.objects.filter(poll=poll)
 
             return PollDistributionSummary(
-                total_link_opens=analytics.filter(
-                    event_type=DistributionEvent.LINK_OPEN
-                ).count(),
-                total_qr_scans=analytics.filter(
-                    event_type=DistributionEvent.QR_SCAN
-                ).count(),
-                total_embed_loads=analytics.filter(
-                    event_type=DistributionEvent.EMBED_LOAD
-                ).count(),
+                total_link_opens=analytics.filter(event_type=DistributionEvent.LINK_OPEN).count(),
+                total_qr_scans=analytics.filter(event_type=DistributionEvent.QR_SCAN).count(),
+                total_embed_loads=analytics.filter(event_type=DistributionEvent.EMBED_LOAD).count(),
                 recent_events=cast(
                     list[DistributionAnalyticsType],
                     list(analytics.order_by("-timestamp")[:limit]),

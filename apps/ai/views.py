@@ -154,9 +154,7 @@ class IngestPollDataView(APIView):
             rag.ingest_poll_data(poll_slug)
 
             response_data = {
-                "message": (
-                    f"Successfully ingested poll {poll_slug} data into vector store"
-                ),
+                "message": (f"Successfully ingested poll {poll_slug} data into vector store"),
                 "poll_slug": poll_slug,
             }
 
@@ -182,8 +180,6 @@ class PollInsightHistoryView(APIView):
         tags=["AI"],
     )
     def get(self, request: "Request", slug: str) -> Response:
-        insights = AnalysisRequest.objects.filter(poll__slug=slug).order_by(
-            "-created_at"
-        )
+        insights = AnalysisRequest.objects.filter(poll__slug=slug).order_by("-created_at")
         serializer = AnalysisRequestSerializer(insights, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

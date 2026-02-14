@@ -5,7 +5,7 @@ import pytest
 from apps.polls.models import Option, Poll, Question, Vote
 
 
-@pytest.fixture  # type: ignore[untyped-decorator]
+@pytest.fixture
 def poll_data(test_user: Any) -> Any:
     poll = Poll.objects.create(
         title="Test Poll", created_by=test_user, description="Testing voting logic"

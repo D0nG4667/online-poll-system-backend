@@ -17,9 +17,7 @@ class DistributionAnalytics(models.Model):
     poll = models.ForeignKey(
         "polls.Poll", on_delete=models.CASCADE, related_name="distribution_analytics"
     )
-    event_type = models.CharField(
-        max_length=20, choices=DistributionEvent.choices, db_index=True
-    )
+    event_type = models.CharField(max_length=20, choices=DistributionEvent.choices, db_index=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     # Metadata for deep analysis

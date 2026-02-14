@@ -40,7 +40,7 @@ class AnalysisRequestType:
 class Query:
     @strawberry.field
     def poll_insight_history(
-        self, info: Info, poll_id: int, limit: int = 10
+        self, info: Info, poll_slug: str, limit: int = 10
     ) -> list[AnalysisRequestType]:
         """Get all AI insights generated for a specific poll."""
         # We need to cast the queryset to list or use strawberry_django's magic.
@@ -49,9 +49,7 @@ class Query:
         return cast(
             list[AnalysisRequestType],
             list(
-                AnalysisRequest.objects.filter(poll_id=poll_id).order_by("-created_at")[
-                    :limit
-                ]
+                AnalysisRequest.objects.filter(poll__slug=poll_slug).order_by("-created_at")[:limit]
             ),
         )
 
@@ -75,9 +73,7 @@ class Mutation:
             raise Exception(f"Failed to ingest poll data: {str(e)}") from e
 
     @strawberry.mutation
-    def generate_poll_insight(
-        self, info: Info, poll_slug: str, query: str
-    ) -> PollInsightType:
+    def generate_poll_insight(self, info: Info, poll_slug: str, query: str) -> PollInsightType:
         """
         Generate AI-powered insights for a poll based on a user query.
         Requires authentication.

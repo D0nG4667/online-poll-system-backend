@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 CACHE_TIMEOUT = 60 * 5
 
 
-@shared_task(bind=True)  # type: ignore[untyped-decorator]
+@shared_task(bind=True)
 def aggregate_votes(self: Any, poll_id: int) -> dict[str, Any] | str:
     """
     Recalculates and caches vote counts for a specific poll asynchronously.
@@ -74,10 +74,8 @@ def aggregate_votes(self: Any, poll_id: int) -> dict[str, Any] | str:
         raise self.retry(exc=exc) from exc
 
 
-@shared_task  # type: ignore[untyped-decorator]
-def send_poll_notification(
-    poll_id: int, notification_type: str = "closed"
-) -> str | None:
+@shared_task
+def send_poll_notification(poll_id: int, notification_type: str = "closed") -> str | None:
     """
     Sends notifications related to poll events (e.g., poll closed, results available).
 
@@ -89,9 +87,7 @@ def send_poll_notification(
         poll = Poll.objects.get(id=poll_id)
         creator = poll.created_by
 
-        logger.info(
-            f"Preparing to send '{notification_type}' notification for Poll {poll.id}"
-        )
+        logger.info(f"Preparing to send '{notification_type}' notification for Poll {poll.id}")
 
         # Placeholder for actual Email/WebSocket logic
         # Checking user preferences would happen here when a user is added to the poll.

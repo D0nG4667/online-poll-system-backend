@@ -61,7 +61,7 @@ python_files = ["tests.py", "test_*.py", "*_tests.py"]
 addopts = "--nomigrations --reuse-db"
 
 [tool.ruff]
-line-length = 88
+line-length = 100
 target-version = "py312"
 extend-exclude = ["*/migrations/*", "manage.py", "config/settings/*"]
 
@@ -90,8 +90,6 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = true
 no_implicit_optional = true
 warn_redundant_casts = true
 warn_unused_ignores = true

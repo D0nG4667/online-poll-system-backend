@@ -20,12 +20,8 @@ class Command(BaseCommand):
     help = "Seeds the database with analytics data (Polls, Votes, Views)"
 
     def add_arguments(self, parser: Any) -> None:
-        parser.add_argument(
-            "--users", type=int, default=10, help="Number of users to create"
-        )
-        parser.add_argument(
-            "--polls", type=int, default=5, help="Number of polls to create"
-        )
+        parser.add_argument("--users", type=int, default=10, help="Number of users to create")
+        parser.add_argument("--polls", type=int, default=5, help="Number of polls to create")
         parser.add_argument(
             "--votes",
             type=int,
@@ -115,9 +111,7 @@ class Command(BaseCommand):
                             order=o_idx,
                         )
 
-            self.stdout.write(
-                self.style.SUCCESS(f"Created {len(polls)} polls with questions")
-            )
+            self.stdout.write(self.style.SUCCESS(f"Created {len(polls)} polls with questions"))
 
             # 3. Generate Views
             # We want views distributed over time
@@ -125,9 +119,7 @@ class Command(BaseCommand):
             for _ in range(target_views):
                 poll = secure_random.choice(polls)
                 viewer = (
-                    secure_random.choice(users)
-                    if secure_random.random() > 0.3
-                    else None
+                    secure_random.choice(users) if secure_random.random() > 0.3 else None
                 )  # 30% anonymous views
 
                 # View time should be after poll creation
@@ -136,9 +128,7 @@ class Command(BaseCommand):
                     days_since_creation = 0
 
                 view_delay = (
-                    secure_random.randint(0, days_since_creation)
-                    if days_since_creation > 0
-                    else 0
+                    secure_random.randint(0, days_since_creation) if days_since_creation > 0 else 0
                 )
                 view_time = poll.created_at + timedelta(days=view_delay)
 
@@ -171,9 +161,7 @@ class Command(BaseCommand):
                             option: Option = secure_random.choice(question_options)
 
                             # Vote time similar logic to views
-                            days_since_creation = (
-                                timezone.now() - poll.created_at
-                            ).days
+                            days_since_creation = (timezone.now() - poll.created_at).days
                             if days_since_creation < 0:
                                 days_since_creation = 0
                             vote_delay = (
@@ -196,6 +184,4 @@ class Command(BaseCommand):
 
             self.stdout.write(self.style.SUCCESS(f"Created {votes_created} votes"))
 
-        self.stdout.write(
-            self.style.SUCCESS("Analytics seeding completed successfully!")
-        )
+        self.stdout.write(self.style.SUCCESS("Analytics seeding completed successfully!"))

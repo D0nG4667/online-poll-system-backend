@@ -19,9 +19,7 @@ class GeneratedPollResponseSerializer(serializers.Serializer):
 
 class GenerateInsightRequestSerializer(serializers.Serializer):
     poll_slug = serializers.CharField(help_text="Slug of the poll to analyze")
-    query = serializers.CharField(
-        max_length=500, help_text="Question to ask about the poll"
-    )
+    query = serializers.CharField(max_length=500, help_text="Question to ask about the poll")
 
 
 class GenerateInsightResponseSerializer(serializers.Serializer):
@@ -31,9 +29,7 @@ class GenerateInsightResponseSerializer(serializers.Serializer):
 
 
 class IngestPollDataRequestSerializer(serializers.Serializer):
-    poll_slug = serializers.CharField(
-        help_text="Slug of the poll to ingest into vector store"
-    )
+    poll_slug = serializers.CharField(help_text="Slug of the poll to ingest into vector store")
 
 
 class IngestPollDataResponseSerializer(serializers.Serializer):

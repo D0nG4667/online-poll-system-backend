@@ -73,9 +73,7 @@ class TestGraphQLQueries:
         from apps.polls.models import Poll
 
         Poll.objects.create(title="Active Poll", created_by=test_user, is_active=True)
-        Poll.objects.create(
-            title="Inactive Poll", created_by=test_user, is_active=False
-        )
+        Poll.objects.create(title="Inactive Poll", created_by=test_user, is_active=False)
 
         query = """
             query TestFilter($active: Boolean) {
@@ -113,8 +111,8 @@ class TestGraphQLQueries:
         )
 
         query = """
-            query TestHistory($pollId: Int!) {
-                pollInsightHistory(pollId: $pollId) {
+            query TestHistory($pollSlug: String!) {
+                pollInsightHistory(pollSlug: $pollSlug) {
                     id
                     query
                     response
@@ -122,7 +120,7 @@ class TestGraphQLQueries:
                 }
             }
         """
-        response = graphql_auth_client(query, {"pollId": poll.id})
+        response = graphql_auth_client(query, {"pollSlug": poll.slug})
         assert response.status_code == 200
         data = response.json()
         assert "errors" not in data
@@ -173,15 +171,15 @@ class TestGraphQLMutations:
         Test AI insight generation via GraphQL mutation.
         """
         query = """
-            mutation TestGenerateInsight($pollId: Int!, $query: String!) {
-                generatePollInsight(pollId: $pollId, query: $query) {
+            mutation TestGenerateInsight($pollSlug: String!, $query: String!) {
+                generatePollInsight(pollSlug: $pollSlug, query: $query) {
                     query
                     insight
                     provider
                 }
             }
         """
-        variables = {"pollId": poll_with_data.id, "query": "Summary of consensus"}
+        variables = {"pollSlug": poll_with_data.slug, "query": "Summary of consensus"}
         response = graphql_auth_client(query, variables)
 
         assert response.status_code == 200
@@ -200,16 +198,14 @@ class TestGraphQLMutations:
         # Mock vector store as in AI REST tests
         mock_vs = mocker.Mock()
         mock_vs.add_documents.return_value = None
-        mocker.patch(
-            "apps.ai.services.RAGService.get_vector_store", return_value=mock_vs
-        )
+        mocker.patch("apps.ai.services.RAGService.get_vector_store", return_value=mock_vs)
 
         query = """
-            mutation TestIngest($pollId: Int!) {
-                ingestPollData(pollId: $pollId)
+            mutation TestIngest($pollSlug: String!) {
+                ingestPollData(pollSlug: $pollSlug)
             }
         """
-        response = graphql_auth_client(query, {"pollId": poll_with_data.id})
+        response = graphql_auth_client(query, {"pollSlug": poll_with_data.slug})
 
         assert response.status_code == 200
         data = response.json()
@@ -217,18 +213,16 @@ class TestGraphQLMutations:
         assert "Successfully ingested" in data["data"]["ingestPollData"]
         mock_vs.add_documents.assert_called_once()
 
-    def test_mutation_requires_auth(
-        self, graphql_client: Any, poll_with_data: Any
-    ) -> None:
+    def test_mutation_requires_auth(self, graphql_client: Any, poll_with_data: Any) -> None:
         """
         Test that mutations fail without authentication.
         """
         query = """
-            mutation TestIngest($pollId: Int!) {
-                ingestPollData(pollId: $pollId)
+            mutation TestIngest($pollSlug: String!) {
+                ingestPollData(pollSlug: $pollSlug)
             }
         """
-        response = graphql_client(query, {"pollId": poll_with_data.id})
+        response = graphql_client(query, {"pollSlug": poll_with_data.slug})
         data = response.json()
         assert "errors" in data
         assert "Authentication required" in data["errors"][0]["message"]

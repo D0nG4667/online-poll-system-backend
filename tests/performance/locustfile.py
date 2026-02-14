@@ -13,14 +13,14 @@ class PollSystemUser(HttpUser):
         """
         pass
 
-    @task(3)  # type: ignore[untyped-decorator]
+    @task(3)
     def view_polls(self) -> None:
         """
         Simulate users browsing the poll list.
         """
         self.client.get("/api/v1/polls/")
 
-    @task(2)  # type: ignore[untyped-decorator]
+    @task(2)
     def view_poll_detail(self) -> None:
         """
         Simulate users looking at a specific poll.
@@ -29,7 +29,7 @@ class PollSystemUser(HttpUser):
         poll_id = secrets.choice(range(1, 6))
         self.client.get(f"/api/v1/polls/{poll_id}/")
 
-    @task(1)  # type: ignore[untyped-decorator]
+    @task(1)
     def query_graphql(self) -> None:
         """
         Simulate GraphQL query traffic.
@@ -48,7 +48,7 @@ class PollSystemUser(HttpUser):
         """
         self.client.post("/graphql/", json={"query": query})
 
-    @task(1)  # type: ignore[untyped-decorator]
+    @task(1)
     def view_user_me(self) -> None:
         """
         Simulate hitting the authenticated 'me' endpoint.

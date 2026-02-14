@@ -12,9 +12,7 @@ class TestPollWorkflows:
     Integration tests for complete user workflows.
     """
 
-    def test_complete_poll_lifecycle(
-        self, auth_client: Any, other_user_auth_client: Any
-    ) -> None:
+    def test_complete_poll_lifecycle(self, auth_client: Any, other_user_auth_client: Any) -> None:
         """
         Scenario: User creates a poll, adds questions/options, activates it,
         and another user votes.
@@ -27,28 +25,30 @@ class TestPollWorkflows:
         }
         response = auth_client.post(poll_url, poll_data, format="json")
         assert response.status_code == 201
-        poll_id = response.data["id"]
+        assert response.status_code == 201
+        poll_slug = response.data["slug"]
 
         # 2. Add Question
         q_url = reverse("polls:question-list")
         q_data = {
-            "poll": poll_id,
+            "poll": poll_slug,
             "text": "Is integration testing fun?",
             "question_type": "single",
         }
         response = auth_client.post(q_url, q_data, format="json")
         assert response.status_code == 201
         q_id = response.data["id"]
+        q_slug = response.data["slug"]
 
         # 3. Add Options
         opt_url = reverse("polls:option-list")
-        opt_data_1 = {"question": q_id, "text": "Yes", "order": 1}
-        opt_data_2 = {"question": q_id, "text": "No", "order": 2}
+        opt_data_1 = {"question": q_slug, "text": "Yes", "order": 1}
+        opt_data_2 = {"question": q_slug, "text": "No", "order": 2}
         auth_client.post(opt_url, opt_data_1, format="json")
         auth_client.post(opt_url, opt_data_2, format="json")
 
         # 4. Activate Poll
-        detail_url = reverse("polls:poll-detail", kwargs={"pk": poll_id})
+        detail_url = reverse("polls:poll-detail", kwargs={"slug": poll_slug})
         auth_client.patch(detail_url, {"is_active": True}, format="json")
 
         # Verify active
@@ -58,15 +58,20 @@ class TestPollWorkflows:
         # 5. Vote as another user
         # Need to find the option ID first
         response = auth_client.get(opt_url)
-        # Filters are probably not set up for options, so we iterate
-        option_id = [
-            opt["id"]
-            for opt in response.data["results"]
-            if opt["text"] == "Yes" and opt["question"] == q_id
-        ][0]
+
+        # Find the target option (Yes)
+        target_option = None
+        for opt in response.data["results"]:
+            if opt["text"] == "Yes" and opt["question"] == q_slug:
+                target_option = opt
+                break
+
+        assert target_option is not None
+        option_id = target_option["id"]
+        option_slug = target_option["slug"]
 
         vote_url = reverse("polls:vote-list")
-        vote_data = {"question": q_id, "option": option_id}
+        vote_data = {"question": q_slug, "option": option_slug}
         response = other_user_auth_client.post(vote_url, vote_data, format="json")
         assert response.status_code == 201
 
@@ -94,7 +99,7 @@ class TestPollWorkflows:
         poll_url = reverse("polls:poll-list")
         poll_data = {"title": ai_data["title"], "description": ai_data["description"]}
         response = auth_client.post(poll_url, poll_data, format="json")
-        poll_id = response.data["id"]
+        poll_slug = response.data["slug"]
 
         # Create questions suggest by AI
         q_url = reverse("polls:question-list")
@@ -104,33 +109,32 @@ class TestPollWorkflows:
             q_res = auth_client.post(
                 q_url,
                 {
-                    "poll": poll_id,
+                    "poll": poll_slug,
                     "text": q_suggested["text"],
                     "question_type": q_suggested["type"],
                 },
                 format="json",
             )
-            q_id = q_res.data["id"]
+            q_slug = q_res.data["slug"]
 
             for opt_text in q_suggested["options"]:
-                auth_client.post(
-                    opt_url, {"question": q_id, "text": opt_text}, format="json"
-                )
+                auth_client.post(opt_url, {"question": q_slug, "text": opt_text}, format="json")
 
         # 3. Generate Insights
         insight_url = reverse("ai:generate-insight")
         response = auth_client.post(
             insight_url,
-            {"poll_id": poll_id, "query": "What do people think about remote work?"},
+            {
+                "poll_slug": poll_slug,
+                "query": "What do people think about remote work?",
+            },
             format="json",
         )
 
         assert response.status_code == 200
         assert response.data["insight"] == mock_openai_insight_generation
 
-    def test_rag_workflow(
-        self, auth_client: Any, poll_with_data: Any, mocker: Any
-    ) -> None:
+    def test_rag_workflow(self, auth_client: Any, poll_with_data: Any, mocker: Any) -> None:
         """
         Scenario: Ingest poll data to vector store, then retrieve history.
         """
@@ -138,22 +142,18 @@ class TestPollWorkflows:
         # Mock vector store
         mock_vs = mocker.Mock()
         mock_vs.add_documents.return_value = None
-        mocker.patch(
-            "apps.ai.services.RAGService.get_vector_store", return_value=mock_vs
-        )
+        mocker.patch("apps.ai.services.RAGService.get_vector_store", return_value=mock_vs)
 
         ingest_url = reverse("ai:ingest-poll-data")
-        response = auth_client.post(
-            ingest_url, {"poll_id": poll_with_data.id}, format="json"
-        )
+        response = auth_client.post(ingest_url, {"poll_slug": poll_with_data.slug}, format="json")
         assert response.status_code == 200
         mock_vs.add_documents.assert_called_once()
 
         # 2. Verify history via GraphQL Query
         graphql_url = "/graphql/"
         query = """
-            query TestHistory($pollId: Int!) {
-                pollInsightHistory(pollId: $pollId) {
+            query TestHistory($pollSlug: String!) {
+                pollInsightHistory(pollSlug: $pollSlug) {
                     query
                 }
             }
@@ -169,7 +169,7 @@ class TestPollWorkflows:
             provider_used="openai",
         )
 
-        payload = {"query": query, "variables": {"pollId": poll_with_data.id}}
+        payload = {"query": query, "variables": {"pollSlug": poll_with_data.slug}}
         response = auth_client.post(
             graphql_url, json.dumps(payload), content_type="application/json"
         )

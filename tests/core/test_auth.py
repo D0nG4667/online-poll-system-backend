@@ -53,9 +53,7 @@ class TestUserProfile:
         assert "first_name" in response.data
         assert "last_name" in response.data
 
-    def test_update_profile_authenticated(
-        self, auth_client: Any, test_user: Any
-    ) -> None:
+    def test_update_profile_authenticated(self, auth_client: Any, test_user: Any) -> None:
         """
         Test updating the authenticated user's profile.
         """

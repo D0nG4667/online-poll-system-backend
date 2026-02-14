@@ -27,9 +27,7 @@ class AnalyticsServiceTests(TestCase):
         self.question = Question.objects.create(
             poll=self.poll, text="Test Question?", question_type="single", order=1
         )
-        self.option = Option.objects.create(
-            question=self.question, text="Option 1", order=1
-        )
+        self.option = Option.objects.create(question=self.question, text="Option 1", order=1)
 
     def test_get_trends(self) -> None:
         # Create a vote

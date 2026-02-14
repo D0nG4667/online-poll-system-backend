@@ -52,9 +52,7 @@ class OptionType:
                 if q_data:
                     return int(q_data.get("options", {}).get(self.id, 0))
         except Exception as e:
-            logger.warning(
-                f"Failed to fetch vote_count from cache for Option {self.id}: {e}"
-            )
+            logger.warning(f"Failed to fetch vote_count from cache for Option {self.id}: {e}")
 
         return self.votes.count()
 
@@ -80,9 +78,7 @@ class QuestionType:
                 if q_data:
                     return int(q_data.get("total_votes", 0))
         except Exception as e:
-            logger.warning(
-                f"Failed to fetch total_votes from cache for Question {self.id}: {e}"
-            )
+            logger.warning(f"Failed to fetch total_votes from cache for Question {self.id}: {e}")
 
         return self.votes.count()
 

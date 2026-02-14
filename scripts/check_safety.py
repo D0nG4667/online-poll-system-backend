@@ -16,9 +16,7 @@ def main() -> int:
         # 1. Get frozen env
         uv_path = shutil.which("uv")
         if not uv_path:
-            sys.stderr.write(
-                "Error: 'uv' command not found. Please verify uv is installed.\n"
-            )
+            sys.stderr.write("Error: 'uv' command not found. Please verify uv is installed.\n")
             return 1
 
         freeze_proc = subprocess.run(

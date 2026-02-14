@@ -77,9 +77,7 @@ class RAGService:
                 logger.error(f"Failed to initialize Gemini LLM: {e}")
 
         if not llm:
-            raise ValueError(
-                "No available LLM providers configured (OpenAI or Gemini)."
-            )
+            raise ValueError("No available LLM providers configured (OpenAI or Gemini).")
 
         return llm
 
@@ -114,9 +112,7 @@ class RAGService:
         from apps.polls.models import Poll
 
         try:
-            poll = Poll.objects.prefetch_related("questions__options__votes").get(
-                slug=poll_slug
-            )
+            poll = Poll.objects.prefetch_related("questions__options__votes").get(slug=poll_slug)
         except Poll.DoesNotExist as e:
             logger.error(f"Poll with slug {poll_slug} not found.")
             raise ValueError(f"Poll with slug {poll_slug} not found.") from e
@@ -125,17 +121,12 @@ class RAGService:
         text_chunks = []
 
         # 1. General Poll Info
-        text_chunks.append(
-            f"Poll Title: {poll.title}. Description: {poll.description or 'None'}."
-        )
+        text_chunks.append(f"Poll Title: {poll.title}. Description: {poll.description or 'None'}.")
 
         # 2. Questions and Options
         for question in poll.questions.all():
             options_text = ", ".join(
-                [
-                    f"{opt.text} ({opt.votes.count()} votes)"
-                    for opt in question.options.all()
-                ]
+                [f"{opt.text} ({opt.votes.count()} votes)" for opt in question.options.all()]
             )
             q_text = (
                 f"Question: {question.text}. Type: {question.question_type}. "
@@ -157,9 +148,7 @@ class RAGService:
         # Store in Vector DB
         vector_store = self.get_vector_store()
         vector_store.add_documents(docs)
-        logger.info(
-            f"Successfully ingested {len(docs)} documents for Poll {poll.title}."
-        )
+        logger.info(f"Successfully ingested {len(docs)} documents for Poll {poll.title}.")
 
         return f"Successfully ingested {len(docs)} text chunks for Poll {poll.title}."
 
@@ -171,9 +160,7 @@ class RAGService:
         try:
             vector_store = self.get_vector_store()
             # Search
-            results = vector_store.similarity_search(
-                query, k=4, filter={"poll_id": poll_id}
-            )
+            results = vector_store.similarity_search(query, k=4, filter={"poll_id": poll_id})
 
             context = "\n".join([doc.page_content for doc in results])
             return context
@@ -204,8 +191,7 @@ class RAGService:
 
         if not context_text:
             logger.warning(
-                f"No relevant context found for query: '{user_query}' "
-                f"on Poll {poll_slug}"
+                f"No relevant context found for query: '{user_query}' on Poll {poll_slug}"
             )
             context_text = "No specific poll data found for this query."
 
@@ -308,9 +294,7 @@ class RAGService:
             if not all(field in poll_structure for field in required_fields):
                 raise ValueError("Missing required fields in generated poll")
 
-            logger.info(
-                f"Successfully generated poll structure: {poll_structure['title']}"
-            )
+            logger.info(f"Successfully generated poll structure: {poll_structure['title']}")
             return cast(dict[str, Any], poll_structure)
 
         except Exception as e:
@@ -324,16 +308,13 @@ class RAGService:
 
                     # Clean up markdown
                     if content.startswith("```json"):
-                        content = (
-                            content.replace("```json", "").replace("```", "").strip()
-                        )
+                        content = content.replace("```json", "").replace("```", "").strip()
                     elif content.startswith("```"):
                         content = content.replace("```", "").strip()
 
                     poll_structure = json.loads(content)
                     logger.info(
-                        "Generated poll structure using fallback LLM: "
-                        f"{poll_structure['title']}"
+                        f"Generated poll structure using fallback LLM: {poll_structure['title']}"
                     )
                     return cast(dict[str, Any], poll_structure)
                 except Exception as fb_err:
