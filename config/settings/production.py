@@ -1,3 +1,4 @@
+import ssl
 from .base import *  # noqa
 from .base import env
 # import dj_database_url # Removed to avoid extra dependency
@@ -17,6 +18,7 @@ DATABASES = {
 DATABASES["default"]["CONN_MAX_AGE"] = 600
 DATABASES["default"]["OPTIONS"] = {"sslmode": "require"}
 
+
 # Cache (Upstash Redis)
 CACHES = {
     "default": {
@@ -25,8 +27,8 @@ CACHES = {
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "CONNECTION_POOL_KWARGS": {
-                "ssl_cert_reqs": None
-            },  # Upstash often requires SSL but checks depend on plan
+                "ssl_cert_reqs": ssl.CERT_REQUIRED
+            },
         },
     }
 }
@@ -34,14 +36,32 @@ CACHES = {
 # Celery (Upstash Redis)
 CELERY_BROKER_URL = env("REDIS_URL")
 CELERY_RESULT_BACKEND = env("REDIS_URL")
-CELERY_BROKER_USE_SSL = {"ssl_cert_reqs": "NONE"}
-CELERY_REDIS_BACKEND_USE_SSL = {"ssl_cert_reqs": "NONE"}
+CELERY_BROKER_USE_SSL = {"ssl_cert_reqs": ssl.CERT_REQUIRED}
+CELERY_REDIS_BACKEND_USE_SSL = {"ssl_cert_reqs": ssl.CERT_REQUIRED}
 
 # Security
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-SECURE_BROWSER_XSS_FILTER = True
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# Content Security Policy (Optional but recommended)
+# CSP_DEFAULT_SRC = ("'self'",)
+
+# CORS & CSRF
+CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[env("FRONTEND_URL")])
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[env("FRONTEND_URL")])
+
+# Render specific: Add Render URL to allowed hosts and trusted origins
+RENDER_EXTERNAL_HOSTNAME = env("RENDER_EXTERNAL_HOSTNAME", default=None)
+if RENDER_EXTERNAL_HOSTNAME:
+    if RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+    if f"https://{RENDER_EXTERNAL_HOSTNAME}" not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
 
 # Email Configuration (Brevo)
 # ------------------------------------------------------------------------------

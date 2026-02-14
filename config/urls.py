@@ -18,7 +18,7 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.http import HttpRequest, JsonResponse  # noqa: F401
+from django.http import HttpRequest, HttpResponse, JsonResponse  # noqa: F401
 from django.urls import include, path
 from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.views import (
@@ -37,6 +37,7 @@ from config.schema import schema
 
 urlpatterns = [
     # path("sentry-debug/", trigger_error),
+    path("healthz/", lambda r: HttpResponse("OK", status=200)),  # Keep-alive endpoint
     path("admin/", admin.site.urls),
     path("graphql/", csrf_exempt(GraphQLView.as_view(schema=schema))),
     # Frontend Callback Mocks (to avoid 404s when frontend is not running)

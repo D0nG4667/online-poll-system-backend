@@ -49,9 +49,14 @@ WORKDIR /app
 # Copy app code + .venv together from builder
 COPY --from=builder --chown=appuser:appuser /app /app
 
-# Install only runtime libraries (no compilers) - Postgres client
+# Install runtime libraries:
+# - libpq5: for Postgres
+# - supervisor: for monolithic process management
+# - ca-certificates: for secure Upstash Redis connections
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
+    supervisor \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Ensure .venv/bin is first on PATH
@@ -64,23 +69,26 @@ ENV DJANGO_SETTINGS_MODULE=config.settings.production
 USER appuser
 
 # Expose the application port
-EXPOSE 8000
+EXPOSE 10000
 
-# Copy uv binary from Astral's official image (useful for runtime management commands if needed)
+# Copy uv binary (useful for runtime management commands if needed)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Collect static files
+# Copy supervisord config
+COPY --chown=appuser:appuser supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Collect static files (dummy env vars for build time)
 RUN export DJANGO_SECRET_KEY=dummy && \
     export DATABASE_URL=sqlite:////tmp/db.sqlite3 && \
     export REDIS_URL=redis://localhost:6379/0 && \
     export BREVO_API_KEY=dummy && \
     export FRONTEND_URL="https://dummy.com" && \
     export JWT_PRIVATE_KEY="$(python -c 'from cryptography.hazmat.primitives import serialization; from cryptography.hazmat.primitives.asymmetric import rsa; key = rsa.generate_private_key(public_exponent=65537, key_size=2048); print(key.private_bytes(encoding=serialization.Encoding.PEM, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serialization.NoEncryption()).decode("utf-8").replace("\n", "\\n"))')" && \
-    uv run python manage.py collectstatic --noinput # pragma: allowlist secret
+    uv run python manage.py collectstatic --noinput
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8000/health/ || exit 1
+  CMD curl -f http://localhost:10000/healthz/ || exit 1
 
-# Start the application using Gunicorn
-CMD ["uv", "run", "gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+# Start supervisord directly
+CMD ["/bin/bash", "-c", "uv run python manage.py migrate --noinput && exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"]
