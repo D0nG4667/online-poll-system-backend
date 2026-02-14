@@ -10,6 +10,10 @@ repos:
     rev: v1.19.1
     hooks:
       - id: mypy
+        # Explicitly pass the settings module to mypy via env var logic isn't standard in pre-commit
+        # efficiently, but django-stubs plugin reads from pyproject.toml which we updated.
+        # We also need to ensure the hook runs in an env where django can be imported.
+        args: ["--config-file=pyproject.toml"]
         additional_dependencies: [
           'django-stubs',
           'djangorestframework-stubs',
