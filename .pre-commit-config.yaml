@@ -43,7 +43,11 @@ repos:
           'pillow',
           'qrcode',
           'redis',
-          'types-qrcode'
+          'types-qrcode',
+          'pytest',
+          'locust',
+          'faker',
+          'whitenoise',
         ]
 
   - repo: https://github.com/Yelp/detect-secrets

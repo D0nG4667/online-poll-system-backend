@@ -33,6 +33,7 @@ dependencies = [
     "strawberry-graphql-django>=0.75.0",
     "types-qrcode>=8.2.0.20250914",
     "uvicorn>=0.40.0",
+    "whitenoise>=6.11.0",
 ]
 
 [dependency-groups]
