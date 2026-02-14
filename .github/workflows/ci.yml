@@ -32,6 +32,11 @@ jobs:
 
       - name: Run Pre-commit Hooks
         uses: pre-commit/action@v3.0.1
+        env:
+          DJANGO_SECRET_KEY: "dummy-key-for-ci-pre-commit"
+          JWT_PRIVATE_KEY: "dummy-jwt-key"
+          DATABASE_URL: "sqlite:///db.sqlite3"
+          REDIS_URL: "redis://localhost:6379/1"
         with:
           extra_args: --all-files
 
@@ -55,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:15
+        image: "pgvector/pgvector:pg16"
         env:
           POSTGRES_DB: poll_db
           POSTGRES_USER: poll_user
@@ -89,8 +94,9 @@ jobs:
           docker run --rm \
             --network host \
             -e DATABASE_URL=postgres://poll_user:poll_password@localhost:5432/poll_db \
-            -e SECRET_KEY=test-secret-key \
-            -e DEBUG=False \
+            -e DJANGO_SETTINGS_MODULE=config.settings.test \
+            -e DJANGO_SECRET_KEY=dummy-test-secret # pragma: allowlist secret
+            -e JWT_PRIVATE_KEY="dummy" # pragma: allowlist secret
             poll-backend:test \
             uv run pytest --cov=apps --cov-report=xml --cov-fail-under=80
 
