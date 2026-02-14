@@ -20,7 +20,9 @@ from sentry_sdk.integrations.django import DjangoIntegration
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 env = environ.Env()
-environ.Env.read_env(BASE_DIR / ".env")
+# Read .env file if it exists
+if (BASE_DIR / ".env").exists():
+    environ.Env.read_env(BASE_DIR / ".env")
 
 # Sentry Configuration
 # ------------------------------------------------------------------------------

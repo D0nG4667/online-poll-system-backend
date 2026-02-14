@@ -55,7 +55,7 @@ dev = [
 
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "config.settings.local"
+DJANGO_SETTINGS_MODULE = "config.settings.test"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
 addopts = "--nomigrations --reuse-db"
 
@@ -107,4 +107,4 @@ module = [
 ignore_missing_imports = true
 
 [tool.django-stubs]
-django_settings_module = "config.settings.local"
+django_settings_module = "config.settings.test"
