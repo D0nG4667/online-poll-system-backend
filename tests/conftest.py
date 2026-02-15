@@ -75,14 +75,14 @@ def jwt_auth_client(api_client: APIClient, test_user: Any) -> APIClient:
     )
     pem = key.private_bytes(
         encoding=serialization.Encoding.PEM,
-        format=serialization.PrivateFormat.TraditionalOpenSSL,
+        format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.NoEncryption(),
     )
 
     # Patch the setting just for this test client
     from django.conf import settings
 
-    settings.JWT_PRIVATE_KEY = pem.decode("utf-8")
+    settings.HEADLESS_JWT_PRIVATE_KEY = pem.decode("utf-8")
 
     # create_access_token returns just the token string
     access_token = create_access_token(user=test_user, session=session, claims={})
