@@ -1,7 +1,7 @@
 ```mermaid
 erDiagram
     %% Full System Master ERD
-    %% Project Nexus: Poll Platform Backend
+    %% Plaude Poll Backend
 
     %% ==========================================
     %% 1. Core Polling Domain
@@ -128,9 +128,10 @@ erDiagram
 ```
 
 ## Overview
-This master diagram represents the entire data architecture of the Poll Platform Backend.
+This master diagram represents the entire data architecture of the Plaude Poll Backend.
 - **Core**: Handles the fundamental Poll/Question/Vote logic.
 - **AI**: manages LLM interactions and Vector embeddings.
 - **Distribution**: Tracks how polls are shared and accessed.
 - **Analytics**: High-volume tables for tracking views and engagement metrics.
 - **Infrastructure**: Support tables for async processing and system health.
+```
