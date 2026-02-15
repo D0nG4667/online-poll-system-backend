@@ -2,6 +2,8 @@
 
 A robust, AI-powered backend for creating, managing, and analyzing polls. Built with Django 5, Celery, and LangChain, featuring high-performance voting, RAG-based insights, and dual authentication support (Session + JWT).
 
+[![codecov](https://codecov.io/gh/D0nG4667/online-poll-system-backend/graph/badge.svg)](https://codecov.io/gh/D0nG4667/online-poll-system-backend)
+
 ## ✨ Key Features
 
 - **AI-Powered Poll Generation**: Build entire polls from natural language prompts using LLMs.
