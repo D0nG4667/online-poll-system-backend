@@ -95,14 +95,19 @@ jobs:
           TEST_SECRET_KEY: dummy-test-secret # pragma: allowlist secret
           TEST_JWT_KEY: "dummy" # pragma: allowlist secret
         run: |
-          docker run --rm \
+          docker run --name test-container \
             --network host \
             -e DATABASE_URL="$TEST_DB_URL" \
             -e DJANGO_SETTINGS_MODULE=config.settings.test \
             -e DJANGO_SECRET_KEY="$TEST_SECRET_KEY" \
             -e JWT_PRIVATE_KEY="$TEST_JWT_KEY" \
             poll-backend:test \
-            uv run pytest --cov=apps --cov-report=xml --cov-fail-under=80
+            uv run pytest --cov=apps --cov-report=xml --cov-fail-under=80 || true
+          
+          docker cp test-container:/app/coverage.xml ./coverage.xml
+          EXIT_CODE=$(docker inspect test-container --format='{{.State.ExitCode}}')
+          docker rm test-container
+          exit $EXIT_CODE || true
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
