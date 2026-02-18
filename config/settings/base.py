@@ -298,6 +298,9 @@ SOCIALACCOUNT_ADAPTER = "allauth.socialaccount.adapter.DefaultSocialAccountAdapt
 SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_STORE_TOKENS = True
 
+# Automatically connect social account to local user
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all in debug mode
