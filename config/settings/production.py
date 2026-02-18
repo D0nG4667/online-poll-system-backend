@@ -7,7 +7,9 @@ from .base import env
 
 DEBUG = False
 SECRET_KEY = env("DJANGO_SECRET_KEY")
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["onrender.com"])
+ALLOWED_HOSTS = env.list(
+    "DJANGO_ALLOWED_HOSTS", default=["onrender.com", "plaudepoll.gabcares.xyz"]
+)
 USE_X_FORWARDED_HOST = True
 
 # Ensure Sentry knows this is production
@@ -60,8 +62,12 @@ SECURE_HSTS_PRELOAD = True
 # CSP_DEFAULT_SRC = ("'self'",)
 
 # CORS & CSRF
-CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[env("FRONTEND_URL")])
-CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[env("FRONTEND_URL")])
+CORS_ALLOWED_ORIGINS = env.list(
+    "CORS_ALLOWED_ORIGINS", default=[env("FRONTEND_URL"), "https://plaudepoll.gabcares.xyz"]
+)
+CSRF_TRUSTED_ORIGINS = env.list(
+    "CSRF_TRUSTED_ORIGINS", default=[env("FRONTEND_URL"), "https://plaudepoll.gabcares.xyz"]
+)
 CORS_ALLOW_CREDENTIALS = True
 
 # Render specific: Add Render URL to allowed hosts and trusted origins
