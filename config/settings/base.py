@@ -159,9 +159,7 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": (
-            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
-        ),
+        "NAME": ("django.contrib.auth.password_validation.UserAttributeSimilarityValidator"),
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
@@ -203,15 +201,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 EMAIL_BACKEND = env(
     "DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend"
 )
-DEFAULT_FROM_EMAIL = env(
-    "DEFAULT_FROM_EMAIL", default="Plaude Polls <hello@plaudepolls.com>"
-)
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Plaude Polls <hello@plaudepolls.com>")
 
 # REST Framework
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "apps.core.authentication.MultiAuthenticationBackend",
-    ),
+    "DEFAULT_AUTHENTICATION_CLASSES": ("apps.core.authentication.MultiAuthenticationBackend",),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.StandardResultsSetPagination",
@@ -228,9 +222,7 @@ HEADLESS_CLIENTS = ["app", "browser"]
 HEADLESS_FRONTEND_URLS = {
     "account_confirm_email": f"{FRONTEND_URL}/account/verify-email/{{key}}",
     "account_reset_password": f"{FRONTEND_URL}/account/password/reset",
-    "account_reset_password_from_key": (
-        f"{FRONTEND_URL}/account/password/reset/key/{{key}}"
-    ),
+    "account_reset_password_from_key": (f"{FRONTEND_URL}/account/password/reset/key/{{key}}"),
     "account_signup": f"{FRONTEND_URL}/account/signup",
     "socialaccount_login_error": f"{FRONTEND_URL}/account/provider/callback",
 }
@@ -261,14 +253,15 @@ HEADLESS_JWT_REFRESH_TOKEN_EXPIRES_IN = 60 * 60 * 24 * 7  # 7 days in seconds
 HEADLESS_JWT_ALGORITHM = "RS256"  # RSA algorithm for asymmetric keys
 
 # AllAuth
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_USER_MODEL_EMAIL_FIELD = "email"
+ACCOUNT_SIGNUP_FIELDS = ["email*"]
 ACCOUNT_LOGIN_METHODS = {"email"}
-ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_EMAIL_VERIFICATION = "optional"
 ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = False
 ACCOUNT_LOGIN_BY_CODE_ENABLED = True
 ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = False
 ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 
 # Social Account Configuration
 # https://github.com/pennersr/django-allauth/blob/main/docs/socialaccount/provider_configuration.md
