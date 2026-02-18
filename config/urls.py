@@ -38,7 +38,7 @@ from config.schema import schema
 # Base Project URLs
 base_patterns = [
     path("healthz", lambda r: HttpResponse("OK", status=200)),
-    path("admin", admin.site.urls),
+    path("admin/", admin.site.urls),
     path("graphql", csrf_exempt(GraphQLView.as_view(schema=schema))),
     path(
         "account/provider/callback",
@@ -52,7 +52,7 @@ base_patterns = [
 # Authentication (Headless & Allauth)
 auth_patterns = [
     path("_allauth/", include("allauth.headless.urls")),
-    path("accounts", include("allauth.urls")),
+    path("accounts/", include("allauth.urls")),  # Intermediate urls should have a trailing slash
 ]
 
 # Documentation & Schema
