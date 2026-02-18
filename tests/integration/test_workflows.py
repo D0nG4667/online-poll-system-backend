@@ -150,7 +150,7 @@ class TestPollWorkflows:
         mock_vs.add_documents.assert_called_once()
 
         # 2. Verify history via GraphQL Query
-        graphql_url = "/graphql/"
+        graphql_url = "/graphql"
         query = """
             query TestHistory($pollSlug: String!) {
                 pollInsightHistory(pollSlug: $pollSlug) {

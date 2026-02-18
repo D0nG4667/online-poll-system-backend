@@ -42,7 +42,7 @@ class PaginationTests(TestCase):
         }
         """
         response = self.client.post(
-            "/graphql/", data={"query": query}, content_type="application/json"
+            "/graphql", data={"query": query}, content_type="application/json"
         )
         data = response.json()
 
@@ -56,7 +56,7 @@ class PaginationTests(TestCase):
         assert polls_data["pageInfo"]["hasNextPage"]
 
     def test_rest_pagination(self) -> None:
-        response = self.client.get("/api/v1/polls/")
+        response = self.client.get("/api/v1/polls")
         assert response.status_code == 200
         data = response.json()
 
@@ -81,7 +81,7 @@ class PaginationTests(TestCase):
 
     def test_rest_page_size(self) -> None:
         # Test custom page size
-        response = self.client.get("/api/v1/polls/?page_size=10")
+        response = self.client.get("/api/v1/polls?page_size=10")
         assert response.status_code == 200
         data = response.json()
 

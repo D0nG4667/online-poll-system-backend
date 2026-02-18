@@ -35,12 +35,11 @@ from config.schema import schema
 #     return HttpResponse(status=500)
 
 
-urlpatterns = [
-    # path("sentry-debug/", trigger_error),
-    path("healthz/", lambda r: HttpResponse("OK", status=200)),  # Keep-alive endpoint
-    path("admin/", admin.site.urls),
-    path("graphql/", csrf_exempt(GraphQLView.as_view(schema=schema))),
-    # Frontend Callback Mocks (to avoid 404s when frontend is not running)
+# Base Project URLs
+base_patterns = [
+    path("healthz", lambda r: HttpResponse("OK", status=200)),
+    path("admin", admin.site.urls),
+    path("graphql", csrf_exempt(GraphQLView.as_view(schema=schema))),
     path(
         "account/provider/callback",
         lambda r: JsonResponse(
@@ -48,36 +47,51 @@ urlpatterns = [
         ),
         name="frontend-callback-placeholder",
     ),
-    # Authentication
-    # Authentication (Headless)
+]
+
+# Authentication (Headless & Allauth)
+auth_patterns = [
     path("_allauth/", include("allauth.headless.urls")),
-    # Required by allauth for internal logic (providers/callbacks),
-    # even in headless mode.
-    path("accounts/", include("allauth.urls")),
-    # Swagger/Schema
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("accounts", include("allauth.urls")),
+]
+
+# Documentation & Schema
+doc_patterns = [
+    path("api/schema", SpectacularAPIView.as_view(), name="schema"),
     path(
-        "api/schema/swagger-ui/",
+        "api/schema/swagger-ui",
         SpectacularSwaggerView.as_view(url_name="schema"),
         name="swagger-ui",
     ),
     path(
-        "api/schema/auth-ui/",
+        "api/schema/auth-ui",
         SpectacularSwaggerView.as_view(url="/_allauth/openapi.json"),
         name="swagger-ui-auth",
     ),
     path(
-        "api/schema/redoc/",
+        "api/schema/redoc",
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
-    # App APIs
-    path("api/v1/", include("apps.core.urls")),
-    path("api/v1/users/", include("apps.users.urls")),
-    path("api/v1/", include("apps.polls.urls")),
-    path("api/v1/ai/", include("apps.ai.urls")),
-    path("api/v1/distribution/", include("apps.distribution.urls")),
 ]
+
+# API Version 1
+api_v1_patterns = [
+    path("", include("apps.core.urls")),
+    path("users/", include("apps.users.urls")),
+    path("", include("apps.polls.urls")),
+    path("ai/", include("apps.ai.urls")),
+    path("distribution/", include("apps.distribution.urls")),
+]
+
+urlpatterns = (
+    base_patterns
+    + auth_patterns
+    + doc_patterns
+    + [
+        path("api/v1/", include(api_v1_patterns)),
+    ]
+)
 
 
 if settings.DEBUG:

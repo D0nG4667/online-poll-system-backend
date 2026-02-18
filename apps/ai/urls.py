@@ -11,18 +11,18 @@ app_name = "ai"
 
 urlpatterns = [
     path(
-        "generate-poll/",
+        "generate-poll",
         GeneratePollFromPromptView.as_view(),
         name="generate-poll-from-prompt",
     ),
     path(
-        "insights/generate/",
+        "insights/generate",
         GeneratePollInsightView.as_view(),
         name="generate-insight",
     ),
-    path("ingest/", IngestPollDataView.as_view(), name="ingest-poll-data"),
+    path("ingest", IngestPollDataView.as_view(), name="ingest-poll-data"),
     path(
-        "insights/history/<str:slug>/",
+        "insights/history/<str:slug>",
         PollInsightHistoryView.as_view(),
         name="insight-history",
     ),

@@ -122,6 +122,8 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "config.urls"
 
+APPEND_SLASH = False
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -306,9 +308,9 @@ DESCRIPTION = f"""
 Hybrid REST & GraphQL API for Online Poll System
 
 ### Features
-- Authentication (AllAuth) → [AllAuth]({BASE_URL}/api/schema/auth-ui/)
+- Authentication (AllAuth) → [AllAuth]({BASE_URL}/api/schema/auth-ui)
 - REST API for poll management (Polls, Votes, Questions, Options)
-- GraphQL API for poll queries and mutations → [GraphQL]({BASE_URL}/graphql/)
+- GraphQL API for poll queries and mutations → [GraphQL]({BASE_URL}/graphql)
 - AI-powered poll generation
 - AI-powered poll insights
 - AI-powered poll analysis

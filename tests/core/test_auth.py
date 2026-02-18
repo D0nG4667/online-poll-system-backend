@@ -10,7 +10,7 @@ class TestAuthentication:
         """
         Verify that Session authentication works for standard endpoints.
         """
-        url = reverse("user-profile")
+        url = reverse("users:user-profile")
         response = auth_client.get(url)
         assert response.status_code == 200
         # Since we use allauth headless,
@@ -21,7 +21,7 @@ class TestAuthentication:
         """
         Verify that JWT Bearer token works.
         """
-        url = reverse("user-profile")
+        url = reverse("users:user-profile")
         response = jwt_auth_client.get(url)
         assert response.status_code == 200
 
@@ -30,7 +30,7 @@ class TestAuthentication:
         Verify that unauthenticated requests are rejected for protected endpoints.
         """
         # Vote creation is strictly protected (IsAuthenticated)
-        url = "/api/v1/votes/"
+        url = "/api/v1/votes"
         response = api_client.post(url, {})
         assert response.status_code == 403
 
@@ -45,7 +45,7 @@ class TestUserProfile:
         """
         Test retrieving the authenticated user's profile.
         """
-        url = reverse("user-profile")
+        url = reverse("users:user-profile")
         response = auth_client.get(url)
 
         assert response.status_code == 200
@@ -57,7 +57,7 @@ class TestUserProfile:
         """
         Test updating the authenticated user's profile.
         """
-        url = reverse("user-profile")
+        url = reverse("users:user-profile")
         data = {"first_name": "NewFirst", "last_name": "NewLast"}
         response = auth_client.patch(url, data, format="json")
 
@@ -73,7 +73,7 @@ class TestUserProfile:
         """
         Test that anonymous users cannot access the profile endpoint.
         """
-        url = reverse("user-profile")
+        url = reverse("users:user-profile")
         response = api_client.get(url)
 
         assert response.status_code == 403

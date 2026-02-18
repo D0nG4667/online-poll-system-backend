@@ -5,7 +5,7 @@ from .views import OptionViewSet, PollViewSet, QuestionViewSet, VoteViewSet
 
 app_name = "polls"
 
-router = DefaultRouter()
+router = DefaultRouter(trailing_slash=False)
 router.register(r"polls", PollViewSet)
 router.register(r"questions", QuestionViewSet)
 router.register(r"options", OptionViewSet)

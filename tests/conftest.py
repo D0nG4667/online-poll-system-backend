@@ -98,7 +98,7 @@ def graphql_client(api_client: APIClient) -> Callable[..., Any]:
 
     def _query(query: str, variables: dict[str, Any] | None = None, **kwargs: Any) -> Any:
         return api_client.post(
-            "/graphql/",
+            "/graphql",
             data={"query": query, "variables": variables or {}},
             format="json",
             **kwargs,
@@ -115,7 +115,7 @@ def graphql_auth_client(auth_client: APIClient) -> Callable[..., Any]:
 
     def _query(query: str, variables: dict[str, Any] | None = None, **kwargs: Any) -> Any:
         return auth_client.post(
-            "/graphql/",
+            "/graphql",
             data={"query": query, "variables": variables or {}},
             format="json",
             **kwargs,
