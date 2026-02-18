@@ -1,6 +1,8 @@
 import ssl
+
 from .base import *  # noqa
 from .base import env
+
 # import dj_database_url # Removed to avoid extra dependency
 
 DEBUG = False
@@ -12,11 +14,16 @@ DJANGO_ENVIRONMENT = "production"
 FRONTEND_URL = env("FRONTEND_URL")
 
 # Database (Neon)
-DATABASES = {
-    "default": env.db("DATABASE_URL")
+DATABASES = {"default": env.db("DATABASE_URL")}
+DATABASES["default"]["CONN_MAX_AGE"] = 60
+DATABASES["default"]["OPTIONS"] = {
+    "sslmode": "require",
+    "connect_timeout": 5,
+    "keepalives": 1,
+    "keepalives_idle": 30,
+    "keepalives_interval": 10,
+    "keepalives_count": 5,
 }
-DATABASES["default"]["CONN_MAX_AGE"] = 600
-DATABASES["default"]["OPTIONS"] = {"sslmode": "require"}
 
 
 # Cache (Upstash Redis)
@@ -26,9 +33,7 @@ CACHES = {
         "LOCATION": env("REDIS_URL"),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "CONNECTION_POOL_KWARGS": {
-                "ssl_cert_reqs": ssl.CERT_REQUIRED
-            },
+            "CONNECTION_POOL_KWARGS": {"ssl_cert_reqs": ssl.CERT_REQUIRED},
         },
     }
 }
@@ -59,7 +64,7 @@ CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[env("FRONTEND_U
 RENDER_EXTERNAL_HOSTNAME = env("RENDER_EXTERNAL_HOSTNAME", default=None)
 if RENDER_EXTERNAL_HOSTNAME:
     if RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
-            ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+        ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
     if f"https://{RENDER_EXTERNAL_HOSTNAME}" not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
 
