@@ -91,4 +91,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:10000/healthz/ || exit 1
 
 # Start supervisord directly
-CMD ["/bin/bash", "-c", "uv run python manage.py migrate --noinput && exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"]
+CMD ["/bin/bash", "-c", "uv run python manage.py migrate --noinput && uv run python manage.py createsuperuser_if_none && exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"]
